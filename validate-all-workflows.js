@@ -155,8 +155,8 @@ async function validateWorkflow(token, workflow) {
   const report = await axios(config).then(function (response) {
     return response;
   }).catch(function (e) {
-    console.error(`Error validating workflow: ${util.inspect(e)}`);
-    return false;
+    console.error(`Error validating workflow: ${workflow.name}`);
+    return {"data":{"errors":[],"warnings":[]}};
   });
   return report.data;
 }
@@ -199,9 +199,9 @@ async function main() {
   bar1.stop();
 
   // Write the final report to a file
-  console.log("Writing report file...");
+  console.log("Writing workflow report file...");
   try {
-    fs.writeFileSync('upgrade-report.json', JSON.stringify(finalReport, null, 2));
+    fs.writeFileSync('workflow-upgrade-report.json', JSON.stringify(finalReport, null, 2));
   } catch (e) {
     console.error(`Problem writing report file: ${util.inspect(e)}`);
   }

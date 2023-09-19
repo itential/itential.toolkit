@@ -19,8 +19,8 @@ const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 async function getCmdArgs() {
   if (process.argv.length < 4) {
     console.error(`Missing script parameters!`);
-    console.log(`Usage:\nnode validate-all-adapters.js <iap-host-port> <iap-username>`);
-    console.log('Example:\nnode validate-all-adapters.js http://myiap.host.com:3000 admin@pronghorn');
+    console.log(`Usage:\nnode validate-all-profiles.js <iap-host-port> <iap-username>`);
+    console.log('Example:\nnode validate-all-profiles.js http://myiap.host.com:3000 admin@pronghorn');
     process.exit(1);
   }
   TARGETHOSTURL = process.argv[2];
@@ -56,108 +56,108 @@ async function login() {
 }
 
 /**
- * This will use the IAP admin essentials API to get a list of adapters. The
+ * This will use the IAP admin essentials API to get a list of profiles. The
  * API requires iterating over the pagination. The API call is restricting the
- * adapter fields that are returned to just the name and ID with the "include"
+ * profile fields that are returned to just the name and ID with the "include"
  * parameter. They are also sorted by name and ordered.
  * @param {string} token - The IAP session token
  * @param {integer} limit - The number of results to return in a page
  * @param {integer} skip - The number in the result set to start from
  * @returns {object} - The API response object
  */
-async function getAdapters(token, limit, skip) {
+async function getProfiles(token, limit, skip) {
   let config = {
     method: 'GET',
-    url: `${TARGETHOSTURL}/adapters?limit=${limit}&skip=${skip}&order=1&sort=name&include=name&token=${token}`,
+    url: `${TARGETHOSTURL}/profiles?limit=${limit}&skip=${skip}&order=1&sort=id&include=id&token=${token}`,
     headers: {
       'Content-Type': 'application/json',
       'Cookie': token
     }
   };
-  const adapters = await axios(config).then(function (response) {
+  const profiles = await axios(config).then(function (response) {
     return response;
   }).catch(function (e) {
-    console.error(`Error searching for adapters list: ${util.inspect(e)}`);
+    console.error(`Error searching for profiles list: ${util.inspect(e)}`);
     return false;
   });
-  return adapters;
+  return profiles;
 }
 
 /**
- * This will use the IAP automation-studio API to get a single adapter by
+ * This will use the IAP automation-studio API to get a single profile by
  * name.
  * @param {string} token - The IAP session token
- * @param {string} adapterName - The adapter name
+ * @param {string} profileName - The profile name
  * @returns {object} - The object representing the workflow
  */
-async function getAdapter(token, adapterName) {
+async function getProfile(token, profileName) {
   let config = {
     method: 'GET',
-    url: `${TARGETHOSTURL}/adapters/${encodeURIComponent(adapterName)}?token=${token}`,
+    url: `${TARGETHOSTURL}/profiles/${encodeURIComponent(profileName)}?token=${token}`,
     headers: {
       'Content-Type': 'application/json',
       'Cookie': token
     }
   };
-  const adapter = await axios(config).then(function (response) {
+  const profile = await axios(config).then(function (response) {
     return response;
   }).catch(function (e) {
-    console.error(`Error searching for adapter '${adapterName}': ${util.inspect(e)}`);
+    console.error(`Error searching for profile '${profileName}': ${util.inspect(e)}`);
     return false;
   });
-  return adapter.data.data;
+  //console.log(util.inspect(profile.data.profile,{depth:null}))
+  return profile.data.profile;
 }
 
 /**
- * This will use the IAP admin essentials API to get a list of all adapter
- * names. First, it will make a call for a single adapter to discover the
- * total number of adapters. Using this total it will "crawl" to fetch all
- * the adapter names making multiple calls if needed.
+ * This will use the IAP admin essentials API to get a list of all profile
+ * names. First, it will make a call for a single profile to discover the
+ * total number of profiles. Using this total it will "crawl" to fetch all
+ * the profile names making multiple calls if needed.
  * @param {string} token - The IAP session token
- * @returns {array} - The array containing all the adapter names
+ * @returns {array} - The array containing all the profile names
  */
-async function getAllAdapterNames(token) {
+async function getAllProfileNames(token) {
   const limit = 100;
   let skip = 0;
-  let adapterNames = [];
+  let profileNames = [];
   // Make a simple call to determine the total
-  const totals = await getAdapters(token, 1, 0);
+  const totals = await getProfiles(token, 1, 0);
   const total = totals.data.total;
   const numCalls = Math.ceil(total / limit);
-  // Iterate over all adapters
+  // Iterate over all profiles
   for (let i = 0; i < numCalls; i++) {
-    let adapters = await getAdapters(token, limit, skip);
-    batchOfNames = adapters.data.results.map((adapter) => {
-      return adapter.data.name;
+    let profiles = await getProfiles(token, limit, skip);
+    batchOfNames = profiles.data.results.map((profile) => {
+      return profile.profile.id;
     });
-    adapterNames = adapterNames.concat(batchOfNames);
+    profileNames = profileNames.concat(batchOfNames);
     skip = skip + limit;
   }
-  return adapterNames;
+  return profileNames;
 }
 
 /**
- * This function will get the JSON schema for an adapter instance.
+ * This function will get the JSON schema for an profile instance.
  * @param {string} token - The IAP session token
- * @param {string} adapterName - The name of the adapter to get the schema for
  * @returns
  */
-async function getAdapterSchema(token, adapterName) {
+async function getProfileSchema(token) {
   let config = {
     method: 'GET',
-    url: `${TARGETHOSTURL}/schema/adapters/${adapterName}?token=${token}`,
+    url: `${TARGETHOSTURL}/schema/profiles?token=${token}`,
     headers: {
       'Content-Type': 'application/json',
       'Cookie': token
     }
   };
-  const adapterSchema = await axios(config).then(function (response) {
+  const profileSchema = await axios(config).then(function (response) {
     return response;
   }).catch(function (e) {
-    console.error(`Error searching for adapter '${adapterName}': ${util.inspect(e)}`);
+    console.error(`Error searching for profile schema: ${util.inspect(e)}`);
     return false;
   });
-  return adapterSchema.data;
+  return profileSchema.data;
 }
 
 /**
@@ -175,29 +175,29 @@ async function main() {
   console.log('Getting session token...');
   const token = await login();
 
-  // Get all the adapter names
-  console.log("Getting all adapter names...");
-  const adapterNames = await getAllAdapterNames(token);
-  console.log(`Found ${adapterNames.length} adapters`);
+  // Get all the profile names
+  console.log("Getting all profile names...");
+  const profileNames = await getAllProfileNames(token);
+  console.log(`Found ${profileNames.length} profiles`);
 
-  // Iterate over all adapter names, get the adapter, validate the adapter,
+  // Iterate over all profile names, get the profile, validate the profile,
   // and capture validation output as the report
-  console.log("Validating all adapters...");
-  bar1.start(adapterNames.length, 0);
-  for (let i = 0; i < adapterNames.length; i++) {
-    let adapterName = adapterNames[i];
-    let adapter = await getAdapter(token, adapterName);
+  console.log("Validating all profiles...");
+  bar1.start(profileNames.length, 0);
+  for (let i = 0; i < profileNames.length; i++) {
+    let profileName = profileNames[i];
+    let profile = await getProfile(token, profileName);
 
-    // Get adapter schema
-    const adapterSchema = await getAdapterSchema(token, adapterName);
-    if (adapter) {
+    // Get profile schema
+    const profileSchema = await getProfileSchema(token);
+    if (profile) {
       const ajv = new Ajv({strict:false});
-      const valid = ajv.validate(adapterSchema, adapter);
+      const valid = ajv.validate(profileSchema, profile);
       if (!valid) {
-        finalReport[adapterName] = ajv.errors;
+        finalReport[profileName] = ajv.errors;
         totalErrors += ajv.errors.length;
       } else {
-        finalReport[adapterName] = [];
+        finalReport[profileName] = [];
       }
     }
     bar1.increment();
@@ -206,9 +206,9 @@ async function main() {
   bar1.stop();
 
   // Write the final report to a file
-  console.log("Writing adapter report file...");
+  console.log("Writing profile report file...");
   try {
-    fs.writeFileSync('adapter-upgrade-report.json', JSON.stringify(finalReport, null, 2));
+    fs.writeFileSync('profile-upgrade-report.json', JSON.stringify(finalReport, null, 2));
   } catch (e) {
     console.error(`Problem writing report file: ${util.inspect(e)}`);
   }

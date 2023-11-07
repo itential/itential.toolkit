@@ -1,0 +1,20 @@
+- hosts: deviap
+  gather_facts: no
+  connection: local
+
+  tasks:
+  - name: 
+    ansible.builtin.uri:
+      url: http://{{ansible_host}}:3231/login
+      method: POST
+      body_format: json
+      body:
+        user:
+          username: "{{username}}"
+          password: "{{password}}"
+    register: token
+  - name: 
+    ansible.builtin.uri:
+      url: http://{{ansible_host}}:3231/{{service_type}}/{{service_name}}/{{action}}?{{token.cookies_string}}
+      method: PUT
+      status_code: 200

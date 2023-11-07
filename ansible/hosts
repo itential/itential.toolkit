@@ -1,0 +1,12 @@
+all:
+    vars:
+        service_name: Jst
+        service_type: applications
+        action: start
+        username: admin@pronghorn
+        password: admin
+    children:
+        iap:
+            hosts:
+                deviap:
+                    ansible_host: localhost

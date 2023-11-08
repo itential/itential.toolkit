@@ -17,4 +17,4 @@ Example:
 
 Run Playbook:
 
->ansible-playbook -i hosts adapterRestart.yml
+>ansible-playbook -i hosts serviceRestart.yml

@@ -3,10 +3,9 @@ all:
         service_name: Jst
         service_type: applications
         action: start
-        username: admin@pronghorn
-        password: admin
     children:
         iap:
             hosts:
                 deviap:
-                    ansible_host: localhost
+                    ansible_host: http://54.160.202.59:3000
+                    ansible_connection: local    

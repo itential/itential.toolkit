@@ -1,12 +1,19 @@
 ---
 - name: IAP Metrics
-  hosts: deviap
-  connection: local
+  hosts: all
   gather_facts: false
+  vars_prompt:
+
+    - name: username
+      prompt: "IAP username"
+      private: false
+
+    - name: password
+      prompt: "IAP password"
 
   tasks:
     - name: Login to IAP and get token
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/login"
         method: POST
         body: '{"username": "{{ username }}", "password": "{{ password }}"}'
@@ -23,7 +30,7 @@
 
 
     - name: Get workflow count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/automation-studio/workflows{{ auth_token }}"
         method: GET
         status_code: 200
@@ -31,7 +38,7 @@
       register: workflows
 
     - name: Get template count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/automation-studio/templates{{ auth_token }}"
         method: GET
         status_code: 200
@@ -39,7 +46,7 @@
       register: templates
 
     - name: Get transformation count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/transformations{{ auth_token }}"
         method: GET
         status_code: 200
@@ -47,7 +54,7 @@
       register: transformations
 
     - name: Get MOP templates count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/mop/listTemplates{{ auth_token }}"
         method: GET
         status_code: 200
@@ -55,7 +62,7 @@
       register: mop
 
     - name: Get analytic templates count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/mop/listAnalyticTemplates{{ auth_token }}"
         method: GET
         status_code: 200
@@ -63,7 +70,7 @@
       register: analytictemplates
 
     - name: Get jobs count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/operations-manager/jobs{{ auth_token }}"
         method: GET
         status_code: 200
@@ -71,7 +78,7 @@
       register: jobs
 
     - name: Get automations count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/operations-manager/automations{{ auth_token }}"
         method: GET
         status_code: 200
@@ -79,7 +86,7 @@
       register: automations
     
     - name: Get form count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/formbuilder/listForms{{ auth_token }}"
         method: GET
         status_code: 200
@@ -87,7 +94,7 @@
       register: forms
 
     - name: Get json form count
-      uri:
+      ansible.builtin.uri:
         url: "{{ ansible_host }}/json-forms/forms{{ auth_token }}"
         method: GET
         status_code: 200
@@ -95,7 +102,7 @@
       register: jsonforms
 
     - name: Display metrics
-      debug:
+      ansible.builtin.debug:
         msg: 
         - "Metrics of {{ ansible_host }}"
         - "====================================================="

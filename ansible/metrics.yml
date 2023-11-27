@@ -1,0 +1,110 @@
+---
+- name: IAP Metrics
+  hosts: deviap
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Login to IAP and get token
+      uri:
+        url: "{{ ansible_host }}/login"
+        method: POST
+        body: '{"username": "{{ username }}", "password": "{{ password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+
+
+    - name: Get workflow count
+      uri:
+        url: "{{ ansible_host }}/automation-studio/workflows{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: workflows
+
+    - name: Get template count
+      uri:
+        url: "{{ ansible_host }}/automation-studio/templates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: templates
+
+    - name: Get transformation count
+      uri:
+        url: "{{ ansible_host }}/transformations{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: transformations
+
+    - name: Get MOP templates count
+      uri:
+        url: "{{ ansible_host }}/mop/listTemplates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: mop
+
+    - name: Get analytic templates count
+      uri:
+        url: "{{ ansible_host }}/mop/listAnalyticTemplates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: analytictemplates
+
+    - name: Get jobs count
+      uri:
+        url: "{{ ansible_host }}/operations-manager/jobs{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: jobs
+
+    - name: Get automations count
+      uri:
+        url: "{{ ansible_host }}/operations-manager/automations{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: automations
+    
+    - name: Get form count
+      uri:
+        url: "{{ ansible_host }}/formbuilder/listForms{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: forms
+
+    - name: Get json form count
+      uri:
+        url: "{{ ansible_host }}/json-forms/forms{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: jsonforms
+
+    - name: Display metrics
+      debug:
+        msg: 
+        - "Metrics of {{ ansible_host }}"
+        - "====================================================="
+        - "Workflow count: {{ workflows.json.count }} " 
+        - "Template count: {{ templates.json.count }} " 
+        - "MOP template count: {{ mop.json | length }} "
+        - "Analytic template count: {{ analytictemplates.json | length }} " 
+        - "JST count: {{ transformations.json.total }} " 
+        - "JSON form count: {{ jsonforms.json | length }} " 
+        - "Form count: {{ forms.json | length }} " 
+        - "Job count: {{ jobs.json.metadata.total }} " 
+        - "Automation count: {{ automations.json.metadata.total }} " 

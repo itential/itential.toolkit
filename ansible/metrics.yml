@@ -1,0 +1,117 @@
+---
+- name: IAP Metrics
+  hosts: all
+  gather_facts: false
+  vars_prompt:
+
+    - name: username
+      prompt: "IAP username"
+      private: false
+
+    - name: password
+      prompt: "IAP password"
+
+  tasks:
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/login"
+        method: POST
+        body: '{"username": "{{ username }}", "password": "{{ password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+
+
+    - name: Get workflow count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/automation-studio/workflows{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: workflows
+
+    - name: Get template count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/automation-studio/templates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: templates
+
+    - name: Get transformation count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/transformations{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: transformations
+
+    - name: Get MOP templates count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/mop/listTemplates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: mop
+
+    - name: Get analytic templates count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/mop/listAnalyticTemplates{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: analytictemplates
+
+    - name: Get jobs count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/operations-manager/jobs{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: jobs
+
+    - name: Get automations count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/operations-manager/automations{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: automations
+    
+    - name: Get form count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/formbuilder/listForms{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: forms
+
+    - name: Get json form count
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/json-forms/forms{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: jsonforms
+
+    - name: Display metrics
+      ansible.builtin.debug:
+        msg: 
+        - "Metrics of {{ ansible_host }}"
+        - "====================================================="
+        - "Workflow count: {{ workflows.json.count }} " 
+        - "Template count: {{ templates.json.count }} " 
+        - "MOP template count: {{ mop.json | length }} "
+        - "Analytic template count: {{ analytictemplates.json | length }} " 
+        - "JST count: {{ transformations.json.total }} " 
+        - "JSON form count: {{ jsonforms.json | length }} " 
+        - "Form count: {{ forms.json | length }} " 
+        - "Job count: {{ jobs.json.metadata.total }} " 
+        - "Automation count: {{ automations.json.metadata.total }} " 

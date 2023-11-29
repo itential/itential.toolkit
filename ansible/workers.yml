@@ -1,0 +1,84 @@
+---
+- name: IAP Workers start/stop
+  hosts: all
+  gather_facts: false
+  vars_prompt:
+    - name: iap_action
+      prompt: |
+          "Select action (enter the desired number):"
+          (1) START Task Worker
+          (2) STOP Task Worker
+          (3) START Job Worker (2023.1 and higher)
+          (4) STOP Job Worker (2023.1 and higher)
+          (5) START both Task and Job Workers (2023.1 and higher)
+          (6) STOP both Task and Job Workers" (2023.1 and higher)
+      private: no
+
+    - name: username
+      prompt: "IAP username"
+      private: false
+
+    - name: password
+      prompt: "IAP password"
+
+  tasks:
+    - name: Validate action input
+      fail:
+        msg: "Invalid action selected. Please choose one of the valid actions"
+      when: iap_action not in ['1', '2', '3', '4', '5', '6']
+
+    - name: Display selected action
+      debug:
+        var: iap_action
+
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/login"
+        method: POST
+        body: '{"username": "{{ username }}", "password": "{{ password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+
+    - name: Stop Job Worker
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/workflow_engine/jobWorker/deactivate{{ auth_token }}"
+        method: POST
+        status_code: 200
+        return_content: yes
+      register: stop_jw
+      when: iap_action in ['4', '6']
+
+    - name: Stop Task Worker
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/workflow_engine/deactivate{{ auth_token }}"
+        method: POST
+        status_code: 200
+        return_content: yes
+      register: stop_tw
+      when: iap_action in ['2', '6']
+
+    - name: Start Job Worker
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/workflow_engine/jobWorker/activate{{ auth_token }}"
+        method: POST
+        status_code: 200
+        return_content: yes
+      register: stop_jw
+      when: iap_action in ['3', '5']
+
+    - name: Start Task Worker
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/workflow_engine/activate{{ auth_token }}"
+        method: POST
+        status_code: 200
+        return_content: yes
+      register: stop_tw
+      when: iap_action in ['1', '5']

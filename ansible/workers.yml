@@ -12,7 +12,7 @@
           (4) STOP Job Worker (2023.1 and higher)
           (5) START both Task and Job Workers (2023.1 and higher)
           (6) STOP both Task and Job Workers" (2023.1 and higher)
-      private: no
+      private: false
 
     - name: username
       prompt: "IAP username"

@@ -22,7 +22,7 @@
           debug
           trace
           spam
-      private: no
+      private: false
 
   tasks:
 

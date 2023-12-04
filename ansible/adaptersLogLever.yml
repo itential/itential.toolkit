@@ -1,0 +1,95 @@
+---
+- name: Adapters log level
+  hosts: deviap
+  gather_facts: false
+  vars_prompt:
+
+    - name: username
+      prompt: "IAP username (default: admin@pronghorn)"
+      private: false
+      default: "admin@pronghorn"
+
+    - name: password
+      prompt: "IAP password (default: admin)"
+      default: "admin"
+
+    - name: loglevel
+      prompt: |
+          Select log level to be set:
+          error
+          warn
+          info
+          debug
+          trace
+          spam
+      private: no
+
+  tasks:
+
+    - name: Validate log level input
+      fail:
+        msg: "Invalid log level selected. Please choose one of the valid log levels"
+      when: loglevel not in ['error', 'warn', 'info', 'debug', 'trace', 'spam']
+
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/login"
+        method: POST
+        body: '{"username": "{{ username }}", "password": "{{ password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+
+    - name: Get adapters list
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/adapters{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: response
+
+    - name: Extract adapters list from the response
+      set_fact:
+        adapters: "{{ response.json.results }}"
+
+    - name: Display metrics
+      ansible.builtin.debug:
+        msg: 
+        - "{{ item.data.name }}"
+      loop: "{{ adapters }}"
+      loop_control:
+        loop_var: item
+    
+    - name: Create array of "name" values
+      set_fact:
+        name_values_array: "{{ adapters | map(attribute='data.name') | map('regex_replace', ' ', '%20') | list }}"
+
+    - name: Display result
+      debug:
+        var: name_values_array
+
+
+    - name: Set log level
+      ansible.builtin.uri:
+        url: "{{ ansible_host }}/adapters/{{ item }}/loglevel{{ auth_token }}"
+        method: PUT
+        status_code: 200
+        return_content: yes
+        body: {
+          "properties": {
+            "transport": "file",
+            "level": "{{ loglevel }}"
+          }
+        }
+        body_format: json
+      loop: "{{ name_values_array }}"
+      loop_control:
+        loop_var: item
+

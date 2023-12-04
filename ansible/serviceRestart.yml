@@ -1,9 +1,10 @@
-- hosts: deviap
+- name: Service restart playbook
+  hosts: deviap
   gather_facts: no
   connection: local
 
   tasks:
-  - name: 
+  - name: Get token from IAP
     ansible.builtin.uri:
       url: http://{{ansible_host}}:3231/login
       method: POST
@@ -13,7 +14,8 @@
           username: "{{username}}"
           password: "{{password}}"
     register: token
-  - name: 
+
+  - name: Issue service command
     ansible.builtin.uri:
       url: http://{{ansible_host}}:3231/{{service_type}}/{{service_name}}/{{action}}?{{token.cookies_string}}
       method: PUT

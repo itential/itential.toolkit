@@ -1,0 +1,38 @@
+---
+- name: Mongodump
+  hosts: mongo
+  gather_facts: false
+  vars_prompt:
+
+    - name: username
+      prompt: "Mongo user (default value: admin)"
+      private: false
+      default: "admin"
+
+    - name: password
+      prompt: "Mongo password (default value: admin)"
+      default: "admin"
+
+    - name: authdb
+      prompt: "Authentication database (default value: admin)"
+      private: false
+      default: "admin"
+
+    - name: db
+      prompt: "Database to be dumped (default value: itential)"
+      private: false
+      default: "itential"
+
+    - name: collection
+      prompt: "Collection to be dumped (leave empty if all collections should be dumped)"
+      private: false
+      default: ""
+
+  tasks:
+    - name: Dump all collections
+      ansible.builtin.command: mongodump -u {{username}} -d {{db}} -p {{password}} --authenticationDatabase={{authdb}}
+      when: collection == ""
+    
+    - name: Dump single collection
+      ansible.builtin.command: mongodump -u {{username}} -d {{db}} -p {{password}} --authenticationDatabase={{authdb}} -c {{collection}}
+      when: collection != ""

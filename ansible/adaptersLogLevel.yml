@@ -58,23 +58,14 @@
     - name: Extract adapters list from the response
       set_fact:
         adapters: "{{ response.json.results }}"
-
-    - name: Display metrics
-      ansible.builtin.debug:
-        msg: 
-        - "{{ item.data.name }}"
-      loop: "{{ adapters }}"
-      loop_control:
-        loop_var: item
     
     - name: Create array of "name" values
       set_fact:
-        name_values_array: "{{ adapters | map(attribute='data.name') | map('regex_replace', ' ', '%20') | list }}"
+        adapter_list: "{{ adapters | map(attribute='data.name') | map('regex_replace', ' ', '%20') | list }}"
 
     - name: Display result
       debug:
-        var: name_values_array
-
+        var: adapter_list
 
     - name: Set log level
       ansible.builtin.uri:
@@ -89,7 +80,7 @@
           }
         }
         body_format: json
-      loop: "{{ name_values_array }}"
+      loop: "{{ adapter_list }}"
       loop_control:
         loop_var: item
 

@@ -36,7 +36,6 @@ license_file: 'LICENSE'
 # requirements as 'namespace' and 'name'
 tags:
   - itential
-  - deployer
   - automation-platform
   - automation-gateway
 

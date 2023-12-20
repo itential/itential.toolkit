@@ -93,12 +93,12 @@ be better suited for the command line.
 | iap_username | The application user's name                            |
 | iap_password | The application user's password                        |
 | iap_action   | The desired action to perform. Available options are:  |
-|                'start_task_worker',                                   |
-|                'stop_task_worker',                                    |
-|                'start_job_worker',                                    |
-|                'stop_job_worker',                                     |
-|                'start_both',                                          |
-|                'stop_both'                                            |
+|              |  'start_task_worker',                                   |
+|              |  'stop_task_worker',                                    |
+|              |  'start_job_worker',                                    |
+|              |  'stop_job_worker',                                     |
+|              |  'start_both',                                          |
+|              |  'stop_both'                                            |
 
 ### Example
 `ansible-playbook playbooks/workers.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password> iap_action=start_task_worker'`

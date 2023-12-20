@@ -1,7 +1,7 @@
 all:
   vars:
     ansible_user: <some-user-name>
-
+    ansible_ssh_private_key_file: <path-to-key>
   children:
     redis:
       hosts:
@@ -11,6 +11,10 @@ all:
 
     mongodb:
       hosts:
+      vars:
+        mongo_username: admin
+        mongo_password: admin
+        mongo_auth_db: admin       
 
     mongodb_arbiter:
       hosts:
@@ -20,6 +24,8 @@ all:
       vars:
         iap_protocol: http
         iap_port: 3000
+        iap_username: admin@pronghorn
+        iap_password: admin
 
     gateway:
       hosts:

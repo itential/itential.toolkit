@@ -1,10 +1,11 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
 # ansible-playbook -i hosts mongo_dump.yml -e "db=itential collection=workflows"
 - name: Mongodump
   hosts: mongodb
   gather_facts: false
-
   tasks:
 
     - name: Dump all collections

@@ -1,0 +1,26 @@
+all:
+  vars:
+    ansible_user: <some-user-name>
+
+  children:
+    redis:
+      hosts:
+
+    rabbitmq:
+      hosts:
+
+    mongodb:
+      hosts:
+
+    mongodb_arbiter:
+      hosts:
+
+    platform:
+      hosts:
+      vars:
+        iap_protocol: http
+        iap_port: 3000
+
+    gateway:
+      hosts:
+      vars:

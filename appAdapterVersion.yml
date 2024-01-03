@@ -4,7 +4,7 @@
   connection: local
   vars_prompt:
     - name: adapterAppNamesCSV
-      prompt: "Please provide the name of Adapter/App, separated by comma"
+      prompt: "Provide names of Adapter/App, separated by comma. Press ENTER without providing any names in order to get the versions of all adapters and applications"
       private: false
 
     - name: username
@@ -21,7 +21,7 @@
 
     - name: Login to IAP and get token
       ansible.builtin.uri:
-        url: "http://{{ ansible_host }}:{{http_port}}/login"
+        url: "http://{{ ansible_host }}:{{ http_port }}/login"
         method: POST
         body: '{"username": "{{ username }}", "password": "{{ password }}"}'
         body_format: json
@@ -50,6 +50,12 @@
     - name: Extract the adapter information
       set_fact:
         adapters: "{{ adaptersResponse.results |  selectattr(\"id\", \"in\", adapterAppNames) | default([]) }}"
+      when: adapterAppNames[0] != ""
+    
+    - name: Extract the adapter informations
+      set_fact:
+        adapters: "{{ adaptersResponse.results }}"
+      when: adapterAppNames[0] == ""
     
     - name: Get the list of Applications
       ansible.builtin.uri:
@@ -66,6 +72,12 @@
     - name: Get the application information
       set_fact:
         applications: "{{ applicationsResponse.results |  selectattr(\"id\", \"in\", adapterAppNames) | default([]) }}"
+      when: adapterAppNames[0] != ""
+
+    - name: Extract the adapter informations
+      set_fact:
+        applications: "{{ applicationsResponse.results }}"
+      when: adapterAppNames[0] == ""
 
     - name: Grab adapter version
       set_fact: 
@@ -73,7 +85,7 @@
                           The adapters with their versions are:
                           ==========================================
                           {% for item in adapters %}
-                          {{item.id}}: {{ item.version }}
+                          {{ item.id }}: {{ item.version }}
                           {% endfor %}
 
     - name: Grab application version
@@ -82,7 +94,7 @@
                               The applications with their versions are:
                               ==============================================
                               {% for item in applications %}
-                              {{item.id}}: {{ item.version }}
+                              {{ item.id }}: {{ item.version }}
                               {% endfor %}
 
     - name: Grab the list of applications/adapters that are not found.
@@ -98,9 +110,17 @@
                   {% endif %}
                   {% endfor %}
 
-    - name: Display Message 
+    - name: Display the version of provided applications and adapters
       ansible.builtin.debug:
         msg:
           - "{{ adapterVersions.split('\n') }}"
           - "{{ applicationVersions.split('\n') }}"
           - "{{ notFound.split('\n') }}"
+      when: adapterAppNames[0] != ""
+    
+    - name: Display the version of all applications and adapters
+      ansible.builtin.debug:
+        msg:
+          - "{{ adapterVersions.split('\n') }}"
+          - "{{ applicationVersions.split('\n') }}"
+      when: adapterAppNames[0] == ""

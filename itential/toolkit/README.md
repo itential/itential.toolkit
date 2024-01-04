@@ -139,7 +139,7 @@ be better suited for the command line.
 ### Example
 The following command returns the version of local_aaa adapter and AGManager application:
 
-` ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="local_aaa, AGManager" iap_username=<some-username> iap_password=<some-password>'`
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="local_aaa, AGManager" iap_username=<some-username> iap_password=<some-password>'`
 
 The following command returns the version of all applications and adapters.
 

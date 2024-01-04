@@ -137,7 +137,9 @@ be better suited for the command line.
 | adapter_app_names | Names of applications and adapters, separated by comma. If no names are provided, will return versions of all applications and adapters.|
 
 ### Example
-The following command returns the version of local_aaa adapter and AGManager application,
+The following command returns the version of local_aaa adapter and AGManager application:
+
 ` ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="local_aaa, AGManager" iap_username=<some-username> iap_password=<some-password>'`
 The following command returns the version of all applications and adapters.
+
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`

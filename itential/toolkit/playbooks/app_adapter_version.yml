@@ -1,0 +1,133 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts app_adapter_version.yml 
+
+- name: Adapter/App Version
+  hosts: platform
+  gather_facts: false
+  connection: local
+  vars_prompt:
+    - name: adapter_app_names
+      prompt: "Provide names of Adapter/App, separated by comma. Press ENTER without providing any names in order to get the versions of all adapters and applications"
+      private: false
+
+    - name: iap_username
+      prompt: "IAP username"
+      private: false
+
+    - name: iap_password
+      prompt: "IAP Password"
+  
+  tasks:
+    - name: Convert adapter_app_names to list
+      set_fact: 
+        adapter_app_names_list: "{{ adapter_app_names.split(',')|map('trim') }}"
+    
+
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
+        method: POST
+        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+    
+    - name: Get the list of Adapters
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/health/adapters{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: adapters_response
+    
+    - name: Extract the adapters response
+      set_fact:
+        adapters_response: "{{ adapters_response.content }}"
+    
+    - name: Extract the adapter information
+      set_fact:
+        adapters: "{{ adapters_response.results |  selectattr(\"id\", \"in\", adapter_app_names_list) | default([]) }}"
+      when: adapter_app_names_list[0] != ""
+    
+    - name: Extract the adapter informations
+      set_fact:
+        adapters: "{{ adapters_response.results }}"
+      when: adapter_app_names_list[0] == ""
+    
+    - name: Get the list of Applications
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/health/applications{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: applications_response
+
+    - name: Extract the application response
+      set_fact:
+        applications_response: "{{ applications_response.content }}"
+    
+    - name: Get the application information
+      set_fact:
+        applications: "{{ applications_response.results |  selectattr(\"id\", \"in\", adapter_app_names_list) | default([]) }}"
+      when: adapter_app_names_list[0] != ""
+
+    - name: Extract the adapter informations
+      set_fact:
+        applications: "{{ applications_response.results }}"
+      when: adapter_app_names_list[0] == ""
+
+    - name: Grab adapter version
+      set_fact: 
+        adapterVersions: |
+                          The adapters with their versions are:
+                          ==========================================
+                          {% for item in adapters %}
+                          {{ item.id }}: {{ item.version }}
+                          {% endfor %}
+
+    - name: Grab application version
+      set_fact: 
+        applicationVersions: |
+                              The applications with their versions are:
+                              ==============================================
+                              {% for item in applications %}
+                              {{ item.id }}: {{ item.version }}
+                              {% endfor %}
+
+    - name: Grab the list of applications/adapters that are not found.
+      set_fact:
+        notFound: |
+                  Following Adapters/Applications were not found:
+                  ====================================================
+                  {% set adaptersList = adapters_response.results | map(attribute='id') %}
+                  {% set applicationsList = applications_response.results | map(attribute='id') %}
+                  {% for item in adapter_app_names_list %}
+                  {% if item not in adaptersList and item not in applicationsList %}
+                  {{ item }}
+                  {% endif %}
+                  {% endfor %}
+
+    - name: Display the version of provided applications and adapters
+      ansible.builtin.debug:
+        msg:
+          - "{{ adapterVersions.split('\n') }}"
+          - "{{ applicationVersions.split('\n') }}"
+          - "{{ notFound.split('\n') }}"
+      when: adapter_app_names_list[0] != ""
+    
+    - name: Display the version of all applications and adapters
+      ansible.builtin.debug:
+        msg:
+          - "{{ adapterVersions.split('\n') }}"
+          - "{{ applicationVersions.split('\n') }}"
+      when: adapter_app_names_list[0] == ""

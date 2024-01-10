@@ -144,3 +144,24 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+## Restart IAP
+This tool will restart the IAP.
+It requires the following variables, these should be defined in
+the hosts file or can be passed from the command line.
+
+| NAME                              | DESCRIPTION                                                                                 |
+|-----------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                      | The ssh username to connect to the IAP.                                                     |
+| ansible_password                  | The password to authenticate.                                                               |
+| ansible_ssh_private_key_file      | The key file to authenticate.                                                               |
+The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
+### Example
+Running playbook when password/key file is defined in the hosts file
+`ansible-playbook playbooks/restart_iap.yml -i hosts`
+
+Running playbook by providing key file from command-line
+`ansible-playbook playbooks/restart_iap.yml -i hosts --private-key <key_file_name>`
+
+Running playbook by providing password from command-line
+`ansible-playbook playbooks/restart_iap.yml -i --ask-pass <password>`

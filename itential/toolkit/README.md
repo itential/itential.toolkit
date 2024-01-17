@@ -144,3 +144,24 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+## IAG Refresh Custom Script
+This tool will refresh the custom scripts cache in IAG. Furthermore, it also restarts the AGManager application and the IAG adapters in the IAP so that the updated scripts can be accessed from the IAP. The IAP hostnames should be under `platform` group and the IAG hostnames should be under the `gateway` group inside the host file.It requires the following variables, these should be defined in
+the hosts file, as "extra-vars" on the command line, or a mixture of both. For
+example, the password  may not be approrpriate to keep in a hosts file and may
+be better suited for the command line.
+
+| NAME              | DESCRIPTION                                                                                 |
+|-------------------|---------------------------------------------------------------------------------------------|
+| iap_port          | The port that the IAP is running on.                                                        |
+| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
+| iap_username      | The IAP application user's name                                                             |
+| iap_password      | The IAP application user's password                                                         |
+| iag_port          | The port that the IAG is running on.                                                        |
+| iag_protocol      | The HTTP/HTTPS protocol that is being used by IAG                                           |
+| iag_username      | The IAG application user's name                                                             |
+| iag_password      | The IAG application user's password                                                         |
+
+
+### Example
+`ansible-playbook playbooks/iag_refresh_custom_scripts.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> iag_username=<some-username> iag_password=<some-password>'`

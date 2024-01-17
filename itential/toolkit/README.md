@@ -120,3 +120,9 @@ be better suited for the command line.
 
 ### Example
 `ansible-playbook playbooks/mongo_dump.yml -i hosts.yaml --extra-vars 'db=itential collection=workflows'`
+
+## Dependencies version
+This tool will show the versions of Node, NPM, Mongo, Redis and RabbitMQ on the relevant host. 
+
+### Example
+` ansible-playbook -i hosts dependencies_version.yml `

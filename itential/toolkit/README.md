@@ -121,8 +121,26 @@ be better suited for the command line.
 ### Example
 `ansible-playbook playbooks/mongo_dump.yml -i hosts.yaml --extra-vars 'db=itential collection=workflows'`
 
-## Dependencies version
-This tool will show the versions of Node, NPM, Mongo, Redis and RabbitMQ on the relevant host. 
+## App Adapter Version
+This tool will show the the version of applications and adapters in the IAP. User can specify the applications/adapters of which they want to see the version. The users also have the option to view the versions of all applications and adapters.
+It requires the following variables, these should be defined in
+the hosts file, as "extra-vars" on the command line, or a mixture of both. For
+example, the password  may not be approrpriate to keep in a hosts file and may
+be better suited for the command line.
+
+| NAME              | DESCRIPTION                                                                                 |
+|-------------------|---------------------------------------------------------------------------------------------|
+| iap_port          | The port that the IAP is running on.                                                        |
+| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
+| iap_username      | The application user's name                                                                 |
+| iap_password      | The application user's password                                                             |
+| adapter_app_names | Names of applications and adapters, separated by comma. If no names are provided, will return versions of all applications and adapters.|
 
 ### Example
-` ansible-playbook -i hosts dependencies_version.yml `
+The following command returns the version of local_aaa adapter and AGManager application:
+
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="local_aaa, AGManager" iap_username=<some-username> iap_password=<some-password>'`
+
+The following command returns the version of all applications and adapters.
+
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`

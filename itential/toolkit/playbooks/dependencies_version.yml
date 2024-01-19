@@ -1,0 +1,64 @@
+# Copyright (c) 2024, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts mongo_dump.yml -e "db=itential collection=workflows"
+- name: Node and NPM version
+  hosts: platform
+  gather_facts: false
+  tasks:
+
+    - name: Node version
+      ansible.builtin.command: node -v
+      register: node_version
+
+    - name: NPM version
+      ansible.builtin.command: npm -v
+      register: npm_version
+
+- name: Mongo versions
+  hosts: mongodb
+  gather_facts: false
+  tasks:
+   
+    - name: Mongo version
+      ansible.builtin.command: mongod --version
+      register: mongodb_version
+
+- name: Redis versions
+  hosts: redis
+  gather_facts: false
+  tasks:
+
+    - name: Redis version
+      ansible.builtin.command: redis-server -v
+      register: redis_version
+
+- name: Rabbit versions
+  hosts: rabbitmq
+  gather_facts: false
+  tasks:
+
+    - name: Rabbit version
+      ansible.builtin.command: rabbitmqctl version
+      become: true
+      become_user: root
+      register: rabbitmq_version
+
+- name: Show versions
+  hosts: all
+  gather_facts: false
+  tasks:
+
+    - name: Show versions
+      ansible.builtin.debug:
+        msg: 
+        - "Node version: {{ node_version.stdout_lines }}"
+        - "====================================================="
+        - "NPM version: {{ npm_version.stdout_lines }} " 
+        - "====================================================="       
+        - "Mongo version: {{ mongodb_version.stdout_lines }} " 
+        - "====================================================="
+        - "Redis version: {{ redis_version.stdout_lines }} "
+        - "====================================================="
+        - "RabbitMQ version: {{ rabbitmq_version.stdout_lines }} "

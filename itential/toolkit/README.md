@@ -144,3 +144,21 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+
+## RBAC Settings
+This tool will return the roles assigned for a list of users in IAP.
+It requires the following variables, these should be defined in
+the hosts file, as "extra-vars" on the command line, or a mixture of both. For
+example, the password  may not be approrpriate to keep in a hosts file and may
+be better suited for the command line.
+
+| NAME              | DESCRIPTION                                                                                 |
+|-------------------|---------------------------------------------------------------------------------------------|
+| iap_port          | The port that the IAP is running on.                                                        |
+| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
+| iap_username      | The application user's name                                                                 |
+| iap_password      | The application user's password                                                             |
+| users             | Usernames, seperated by comma.                                                              |
+
+`ansible-playbook playbooks/rbac_settings.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> users=username1,username2'`

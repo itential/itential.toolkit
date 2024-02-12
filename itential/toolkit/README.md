@@ -161,4 +161,4 @@ be better suited for the command line.
 | iap_password      | The application user's password                                                             |
 | users             | Usernames, seperated by comma.                                                              |
 
-`ansible-playbook playbooks/rbac_settings.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> users=username1,username2'`
+`ansible-playbook playbooks/rbac_settings.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> users=<username1>,<username2>'`

@@ -1,0 +1,43 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i task_worker_status.yml 
+
+- name: Status of job worker and task worker
+  hosts: platform
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
+        method: POST
+        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "?token={{ token.content }}"
+
+    - name: Get the status of job worker and task worker
+      ansible.builtin.uri:
+        url:  "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/workflow_engine/workers/status{{ auth_token }}"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: status_response
+    
+    - name: Display the status
+      ansible.builtin.debug:
+        msg:
+          - "{{ status_response.json }}"
+    
+
+

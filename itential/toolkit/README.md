@@ -144,3 +144,24 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+
+## Sync IAG Custom Script Schema
+This tool will grab the JSON schema(decorations) of the custom script from the first IAG host in the `gateway` group and applies it to the custom script across other IAG hosts in the `gateway` group. 
+It requires the following variables, these should be defined in
+the hosts file, as "extra-vars" on the command line, or a mixture of both. For
+example, the password  may not be approrpriate to keep in a hosts file and may
+be better suited for the command line.
+
+| NAME              | DESCRIPTION                                                                                 |
+|-------------------|---------------------------------------------------------------------------------------------|
+| iag_port          | The port that the IAG is running on.                                                        |
+| iag_protocol      | The HTTP/HTTPS protocol that is being used by IAG                                           |
+| iag_username      | The IAG application user's name                                                             |
+| iag_password      | The IAG application user's password                                                         |
+| script_name       | Name of the custom script                                                                   |
+
+> **_NOTE:_**  Make sure that the first host in the `gateway` group has the latest JSON schema.
+
+### Example
+`ansible-playbook sync_iag_script_schema.yml -i hosts --extra-vars 'script_name=hello.py'`

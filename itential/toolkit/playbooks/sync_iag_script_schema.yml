@@ -38,19 +38,19 @@
         headers:
             Authorization: "{{ iag_auth_token }}"
       run_once: true
-      register: decorator_response
+      register: schema_response
     
     - name: Display the schema
       ansible.builtin.debug:
         msg:
-          - "{{ decorator_response.json }}"
+          - "{{ schema_response.json }}"
       run_once: true
 
     - name: Update the script schema across all IAG
       ansible.builtin.uri:
         url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/scripts/{{ script_name }}/schema"
         method: PUT
-        body: "{{ decorator_response.json }}"
+        body: "{{ schema_response.json }}"
         body_format: json
         status_code: 200
         headers:

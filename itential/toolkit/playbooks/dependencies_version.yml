@@ -2,12 +2,41 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
-# ansible-playbook -i hosts mongo_dump.yml -e "db=itential collection=workflows"
-- name: Node and NPM version
+# ansible-playbook -i hosts dependencies_version.yml"
+
+- name: Mongo versions
+  hosts: mongodb
+  gather_facts: false
+  tasks:
+    - name: Mongo version
+      ansible.builtin.command: mongod --version
+      register: mongodb_version
+
+
+- name: Redis versions
+  hosts: redis
+  gather_facts: false
+  tasks:
+    - name: Redis version
+      ansible.builtin.command: redis-server -v
+      register: redis_version
+
+
+- name: Rabbit versions
+  hosts: rabbitmq
+  gather_facts: false
+  tasks:
+    - name: Rabbit version
+      ansible.builtin.command: rabbitmqctl version
+      become: true
+      become_user: root
+      register: rabbitmq_version
+
+
+- name: IAP Dependencies Versions
   hosts: platform
   gather_facts: false
   tasks:
-
     - name: Node version
       ansible.builtin.command: node -v
       register: node_version
@@ -15,50 +44,178 @@
     - name: NPM version
       ansible.builtin.command: npm -v
       register: npm_version
+    
+    - name: Python version
+      ansible.builtin.command: python3 -V
+      register: iap_python_version
+    
+    - name: Pip version
+      ansible.builtin.command: pip3 -V
+      register: iap_pip_version
+    
+    - name: MarkupSafe version
+      ansible.builtin.command: pip3 show markupsafe
+      register: iap_markupsafe_version
+    
+    - name: TextFSM version
+      ansible.builtin.command: pip3 show textfsm
+      register: iap_textfsm_version
+    
+    - name: Jinja2 version
+      ansible.builtin.command: pip3 show jinja2
+      register: iap_jinja2_version
+    
+    - name: HashiCorp Vault Version
+      ansible.builtin.command: vault -v
+      register: iap_vault_version
+      ignore_errors: true
 
-- name: Mongo versions
-  hosts: mongodb
+
+- name: IAG Dependencies Version
+  hosts: gateway
   gather_facts: false
   tasks:
-   
-    - name: Mongo version
-      ansible.builtin.command: mongod --version
-      register: mongodb_version
+    - name: Python version
+      ansible.builtin.command: python3 -V
+      register: iag_python_version
+    
+    - name: OpenSSL version
+      ansible.builtin.command: openssl version
+      register: iag_openssl_version
 
-- name: Redis versions
+    - name: HAProxy version
+      ansible.builtin.command: haproxy -v
+      register: iag_haproxy_version
+    
+    - name: Pip version
+      ansible.builtin.command: pip3 -V
+      register: iag_pip_version
+    
+    - name: Terraform version
+      ansible.builtin.command: terraform -v
+      register: iag_terraform_version
+    
+    - name: Nornir version
+      ansible.builtin.command: pip3 show nornir
+      register: iag_nornir_version
+    
+    - name: Netmiko version
+      ansible.builtin.command: pip3 show netmiko
+      register: iag_netmiko_version
+
+    - name: Ansible version
+      ansible.builtin.command: ansible --version
+      register: iag_ansible_version
+
+
+- name: Show Redis version
   hosts: redis
-  gather_facts: false
+  gather_facts: true
   tasks:
-
-    - name: Redis version
-      ansible.builtin.command: redis-server -v
-      register: redis_version
-
-- name: Rabbit versions
-  hosts: rabbitmq
-  gather_facts: false
-  tasks:
-
-    - name: Rabbit version
-      ansible.builtin.command: rabbitmqctl version
-      become: true
-      become_user: root
-      register: rabbitmq_version
-
-- name: Show versions
-  hosts: all
-  gather_facts: false
-  tasks:
-
-    - name: Show versions
+    - name: Show Redis Version
       ansible.builtin.debug:
-        msg: 
-        - "Node version: {{ node_version.stdout_lines }}"
+        msg:
+        - "Summary of gather facts"
         - "====================================================="
-        - "NPM version: {{ npm_version.stdout_lines }} " 
-        - "====================================================="       
-        - "Mongo version: {{ mongodb_version.stdout_lines }} " 
+        - "Architecture: {{ ansible_facts.architecture }}"
+        - "OS version: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+        - "Memory: {{ ansible_facts.memory_mb }}"
         - "====================================================="
         - "Redis version: {{ redis_version.stdout_lines }} "
         - "====================================================="
+
+
+- name: Show Rabbitmq version
+  hosts: rabbitmq
+  gather_facts: true
+  tasks:
+    - name: Show Rabbitmq Version
+      ansible.builtin.debug:
+        msg:
+        - "Summary of gather facts"
+        - "====================================================="
+        - "Architecture: {{ ansible_facts.architecture }}"
+        - "OS version: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+        - "Memory: {{ ansible_facts.memory_mb }}"
+        - "====================================================="
         - "RabbitMQ version: {{ rabbitmq_version.stdout_lines }} "
+        - "====================================================="
+
+
+- name: Show mongo version
+  hosts: mongodb
+  gather_facts: true
+  tasks:
+    - name: Show mongodb Version
+      ansible.builtin.debug:
+        msg:
+        - "Summary of gather facts"
+        - "====================================================="
+        - "Architecture: {{ ansible_facts.architecture }}"
+        - "OS version: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+        - "Memory: {{ ansible_facts.memory_mb }}"
+        - "====================================================="
+        - "Mongo version: {{ mongodb_version.stdout_lines }} " 
+        - "====================================================="
+    
+
+- name: Show IAP dependencies versions
+  hosts: platform
+  gather_facts: true
+  tasks:
+    - name: Show versions
+      ansible.builtin.debug:
+        msg:
+        - "Summary of gather facts"
+        - "====================================================="
+        - "Architecture: {{ ansible_facts.architecture }}"
+        - "OS version: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+        - "Memory: {{ ansible_facts.memory_mb }}"
+        - "====================================================="
+        - "Node version: {{ node_version.stdout_lines }}"
+        - "====================================================="
+        - "NPM version: {{ npm_version.stdout_lines }} " 
+        - "====================================================="
+        - "Python version: {{ iap_python_version.stdout_lines }}"
+        - "====================================================="
+        - "Pip version: {{ iap_pip_version.stdout_lines }}"
+        - "====================================================="
+        - "MarkupSafe version: {{ iap_markupsafe_version.stdout_lines }}"
+        - "====================================================="
+        - "TextFSM version: {{ iap_textfsm_version.stdout_lines }}"
+        - "====================================================="
+        - "Jinja2 version: {{ iap_jinja2_version.stdout_lines }}"
+        - "====================================================="
+        - "Hashicorp Vault version: {{ iap_vault_version.stdout_lines }}"
+        - "====================================================="
+
+
+- name: Show IAG dependencies versions
+  hosts: gateway
+  gather_facts: true
+  tasks:
+    - name: Show versions
+      ansible.builtin.debug:
+        msg:
+        - "Summary of gather facts"
+        - "====================================================="
+        - "Architecture: {{ ansible_facts.architecture }}"
+        - "OS version: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+        - "Memory: {{ ansible_facts.memory_mb }}"
+        - "====================================================="
+        - "Python version: {{ iag_python_version.stdout_lines }}"
+        - "====================================================="
+        - "OpenSSL version: {{ iag_openssl_version.stdout_lines }}"
+        - "====================================================="
+        - "HAProxy version: {{ iag_haproxy_version.stdout_lines }}"
+        - "====================================================="
+        - "Pip version: {{ iag_pip_version.stdout_lines }}"
+        - "====================================================="
+        -  "Terraform version: {{ iag_terraform_version.stdout_lines }}"
+        - "====================================================="
+        - "Nornir version: {{ iag_nornir_version.stdout_lines }}"
+        - "====================================================="
+        - "Netmiko version: {{ iag_netmiko_version.stdout_lines }}"
+        - "====================================================="
+        - "Ansible version: {{ iag_ansible_version }}"
+        - "====================================================="

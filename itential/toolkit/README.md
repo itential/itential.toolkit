@@ -144,3 +144,17 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+## Dependencies Version
+This tool will return the version of redis, rabbitmq, mongobd, IAP components, and IAG components. More information about the dependencies can be found in [this](https://docs.itential.com/docs/itential-dependencies-consolidated) page. The rabbitmq server, redis server, IAP server and IAG server
+should be under their respective group in the hosts file. The following variables should be defined or can be passed from command line to establish ssh connection.
+
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                 | The ssh username to connect.                                                                |
+| ansible_password             | The ssh password to authenticate.                                                           |
+| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+
+### Example
+`ansible-playbook playbooks/dependencies_version.yml -i hosts`
+

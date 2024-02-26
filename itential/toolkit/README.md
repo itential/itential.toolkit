@@ -155,6 +155,18 @@ should be under their respective group in the hosts file. The following variable
 | ansible_password             | The ssh password to authenticate.                                                           |
 | ansible_ssh_private_key_file | The key file to authenticate.                                                               |
 
+Additionally, the following variable should be defined in the hosts file, as "extra-vars" on the command line
+
+| NAME         | DESCRIPTION                                                                           |
+|--------------|---------------------------------------------------------------------------------------|
+| component   | The component(mongodb, redis, etc) to target to. Available options are:                |
+|              |  `mongodb` : Returns the version of mongodb                                           |
+|              |  `redis` : Returns the version of redis                                               |
+|              |  `rabbitmq` : Returns the version of rabbitmq                                         |
+|              |  `platform` : Returns the version of mongodb, redis, rabbitmq, and IAP dependencies   |
+|              |  `gateway` : Returns the version of IAG dependencies.                                 |
+|              |  `all` : Returns the version across all five components.                              | 
+
 ### Example
-`ansible-playbook playbooks/dependencies_version.yml -i hosts`
+`ansible-playbook playbooks/dependencies_version.yml -i hosts --extra-vars 'component=all'`
 

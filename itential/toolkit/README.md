@@ -144,3 +144,20 @@ The following command returns the version of local_aaa adapter and AGManager app
 The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
+
+## Change Mongo Password
+This tool reference the `mongodb` group in the inventory file and change the mongo password for a given user. It also updates the password references for IAP defined in `platform` group in the inventory. The following variables can be defines in the inventory file or can be passed from the command line to establish ssh connection.
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                 | The ssh username to connect.                                                                |
+| ansible_password             | The ssh password to authenticate.                                                           |
+| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+
+Additionally, the following variable should be defined in the hosts file, as "extra-vars" on the command line
+
+| NAME             | DESCRIPTION                                                                           |
+|------------------|---------------------------------------------------------------------------------------|
+| user             | The mongodb user                                                                      |
+| current_password | Current Password                                                                      |
+| new_password     | New Password                                                                          |
+

@@ -1,0 +1,12 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts restart_iap.yml
+- name: Restart IAP
+  hosts: platform
+  gather_facts: false
+
+  tasks:
+    - name: Restart IAP
+      ansible.builtin.command: sudo systemctl restart automation-platform

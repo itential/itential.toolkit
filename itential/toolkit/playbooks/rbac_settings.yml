@@ -9,7 +9,7 @@
   gather_facts: false
   vars: 
     ansible_connection: local
-  
+
   tasks:
     - name: Login to IAP and get token
       ansible.builtin.uri:
@@ -83,18 +83,23 @@
                 {% for role in assignedRoles %}
                 {% set x = roles.append(roles_dict[role]) %}
                 {% endfor %}
-                {% set x = new_user.__setitem__('assignedRoles', roles) %}
+                {% set inheritedRoles = user.inheritedRoles | map(attribute='roleId') %}
+                {% for role in inheritedRoles %}
+                {% set x = roles.append(roles_dict[role]) %}
+                {% endfor %}
+                {% set x = new_user.__setitem__('roles', roles) %}
                 {% set x = users.append(new_user) %}
                 {% endfor %}
                 {{ users }}
     
+   
     - name: Prepare Display message
       set_fact:
         message: |- 
               {% for user in users_roles %}
               Roles assigned for {{ user.username }} at {{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}
               ====================================================================
-              {{ user.assignedRoles }}
+              {{ user.roles }}
 
               {% endfor %}
 

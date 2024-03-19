@@ -138,7 +138,7 @@ be better suited for the command line.
 | adapter_properties_file | Name of the JSON file where the adapter properties are stored.                              |
 
 ### Example
-`ansible-playbook playbooks/create_adapter.yml -i hosts --extra-vars 'adapter_properties_file="<file_name>" iap_username=<some-user> iap_password=<some-password>'`
+`ansible-playbook playbooks/create_adapter.yml -i hosts --extra-vars 'adapter_properties_file="<file_path>" iap_username=<some-user> iap_password=<some-password>'`
 
 ## App Adapter Version
 This tool will show the the version of applications and adapters in the IAP. User can specify the applications/adapters of which they want to see the version. The users also have the option to view the versions of all applications and adapters.

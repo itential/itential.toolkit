@@ -183,5 +183,5 @@ Running playbook when password/key file is defined in the hosts file
 Running playbook by providing key file from command-line
 `ansible-playbook playbooks/restart_iag.yml -i hosts --private-key <key_file_name>`
 
-Running playbook by providing password from command-line
-`ansible-playbook playbooks/restart_iag.yml -i --ask-pass <password>`
+Running playbook by providing username and password from command-line
+`ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`

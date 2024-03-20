@@ -165,6 +165,31 @@ The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
 
+## Dependencies Version
+This tool will return the version of redis, rabbitmq, mongobd, IAP components, and IAG components. More information about the dependencies can be found in [this](https://docs.itential.com/docs/itential-dependencies-consolidated) page. The rabbitmq server, redis server, IAP server and IAG server
+should be under their respective group in the hosts file. The following variables should be defined or can be passed from command line to establish ssh connection.
+
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                 | The ssh username to connect.                                                                |
+| ansible_password             | The ssh password to authenticate.                                                           |
+| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+
+Additionally, the following variable should be defined in the hosts file, as "extra-vars" on the command line
+
+| NAME         | DESCRIPTION                                                                           |
+|--------------|---------------------------------------------------------------------------------------|
+| component   | The component(mongodb, redis, etc) to target to. Available options are:                |
+|              |  `mongodb` : Returns the version of mongodb                                           |
+|              |  `redis` : Returns the version of redis                                               |
+|              |  `rabbitmq` : Returns the version of rabbitmq                                         |
+|              |  `platform` : Returns the version of mongodb, redis, rabbitmq, and IAP dependencies   |
+|              |  `gateway` : Returns the version of IAG dependencies.                                 |
+|              |  `all` : Returns the version across all five components.                              | 
+
+### Example
+`ansible-playbook playbooks/dependencies_version.yml -i hosts --extra-vars 'component=all'`
+
 ## Switch Active Profile
 This tool will switch the active profile to the profile specified. After the active profile is switched, it restarts the IAP.
 It requires the following variables, these should be defined in
@@ -293,5 +318,4 @@ Running playbook by providing key file from command-line
 
 Running playbook by providing username and password from command-line
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
-
 

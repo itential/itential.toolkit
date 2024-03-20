@@ -165,7 +165,38 @@ The following command returns the version of all applications and adapters.
 
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'adapter_app_names="" iap_username=<some-username> iap_password=<some-password>'`
 
-## Job and Task Worker Status
+## Switch Active Profile
+This tool will switch the active profile to the profile specified. After the active profile is switched, it restarts the IAP.
+It requires the following variables, these should be defined in
+the hosts file, as "extra-vars" on the command line, or a mixture of both. For
+example, the password  may not be approrpriate to keep in a hosts file and may
+be better suited for the command line.
+
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| iap_port                     | The port that the IAP is running on.                                                        |
+| iap_protocol                 | The HTTP/HTTPS protocol that is being used by IAP.                                          |
+| iap_username                 | The application user's name.                                                                |
+| iap_password                 | The application user's password.                                                            |
+| id                           | The id of the profile.                                                                      |
+
+Likewise, the following variables should be defined in the hosts file or can be passed from the command line as these variables
+are needed to make an ssh connection to restart IAP.
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                 | The ssh username to connect to IAP.                                                         |
+| ansible_password             | The ssh password to authenticate.                                                           |
+| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+
+### Example
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>'`
+Running the playbook by providing ssh key file from command line
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>' --private-key <key_file_name>`
+Running the playbook by providing ssh username and password from command line
+`ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>' -u <ssh_username> --ask-pass <password>`
+
+
+# Job and Task Worker Status
 This tool will return the status of job worker and task worker of IAP.
 It requires the following variables, these should be defined in
 the hosts file, as "extra-vars" on the command line, or a mixture of both. For
@@ -262,4 +293,5 @@ Running playbook by providing key file from command-line
 
 Running playbook by providing username and password from command-line
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
+
 

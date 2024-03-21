@@ -215,9 +215,13 @@ are needed to make an ssh connection to restart IAP.
 
 ### Example
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>'`
+
 Running the playbook by providing ssh key file from command line
+
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>' --private-key <key_file_name>`
+
 Running the playbook by providing ssh username and password from command line
+
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>' -u <ssh_username> --ask-pass <password>`
 
 

@@ -295,12 +295,15 @@ the hosts file or can be passed from the command line.
 The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
 ### Example
 Running playbook when password/key file is defined in the hosts file
+
 `ansible-playbook playbooks/restart_iap.yml -i hosts`
 
 Running playbook by providing key file from command-line
+
 `ansible-playbook playbooks/restart_iap.yml -i hosts --private-key <key_file_name>`
 
 Running playbook by providing username and password from command-line
+
 `ansible-playbook playbooks/restart_iap.yml -i hosts -u <ssh_username> --ask-pass <password>`
 
 ## Restart IAG
@@ -317,11 +320,14 @@ the hosts file or can be passed from the command line.
 The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
 ### Example
 Running playbook when password/key file is defined in the hosts file
+
 `ansible-playbook playbooks/restart_iag.yml -i hosts`
 
 Running playbook by providing key file from command-line
+
 `ansible-playbook playbooks/restart_iag.yml -i hosts --private-key <key_file_name>`
 
 Running playbook by providing username and password from command-line
+
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
 

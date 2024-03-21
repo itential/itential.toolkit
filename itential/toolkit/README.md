@@ -287,6 +287,7 @@ the hosts file or can be passed from the command line.
 | ansible_user                      | The ssh username to connect to the IAP.                                                     |
 | ansible_password                  | The password to authenticate.                                                               |
 | ansible_ssh_private_key_file      | The key file to authenticate.                                                               |
+
 The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
 ### Example
 Running playbook when password/key file is defined in the hosts file

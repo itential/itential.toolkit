@@ -161,3 +161,4 @@ Additionally, the following variable should be defined in the hosts file, as "ex
 | current_password | Current Password                                                                      |
 | new_password     | New Password                                                                          |
 
+`ansible-playbook playbooks/change_mongodb_password.yml -i hosts --extra-vars 'user=<username> current_password=<current-password> new_password=<new-password>'`

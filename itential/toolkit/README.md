@@ -353,3 +353,24 @@ Running playbook by providing username and password from command-line
 
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
 
+## Change Redis Password
+This tool reference the `redis` group in the inventory file and change the redis password for a given user. It also updates the password references for IAP defined in `platform` group in the inventory. The following variables can be defines in the inventory file or can be passed from the command line to establish ssh connection.
+| NAME                         | DESCRIPTION                                                                                 |
+|------------------------------|---------------------------------------------------------------------------------------------|
+| ansible_user                 | The ssh username to connect.                                                                |
+| ansible_password             | The ssh password to authenticate.                                                           |
+| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+
+Additionally, the following variable should be defined in the hosts file, as "extra-vars" on the command line
+
+| NAME             | DESCRIPTION                                                                           |
+|------------------|---------------------------------------------------------------------------------------|
+| user             | The redis user                                                                        |
+| new_password     | New Password                                                                          |
+| iap_port         | The port that the IAP is running on.                                                  |
+| iap_protocol     | The HTTP/HTTPS protocol that is being used by IAP                                     |
+| iap_username     | The IAP application user's name                                                       |
+| iap_password     | The IAP application user's password                                                   |
+
+### Example
+`ansible-playbook playbooks/change_redis_password.yml -i hosts --extra-vars 'user=<username> new_password=<new-password>'`

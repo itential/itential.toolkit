@@ -162,7 +162,7 @@ Additionally, the following variable should be defined in the hosts file, as "ex
 | new_password     | New Password                                                                          |
 
 
-> **_NOTE:_**  If changing password for `itential` user, restart the IAP using `restart_iap.yml` playbook. If changing password for `localaaa` user, restart the localaaa adapter
-using `restart_adapters.yml` playbook.
+> **_NOTE:_**  While changing password for `localaaa` user, the script asks for `iap_protocol`, `iap_port`, `iap_username`, and `iap_password` so that it can update the password
+inside `local_aaa` adapter and restart it.
 
 `ansible-playbook playbooks/change_mongodb_password.yml -i hosts --extra-vars 'user=<username> current_password=<current-password> new_password=<new-password>'`

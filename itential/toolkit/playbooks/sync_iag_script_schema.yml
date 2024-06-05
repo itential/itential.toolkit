@@ -1,0 +1,59 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts sync_iag_script_decorators.yml
+
+
+- name: Sync IAG Custom Script Schema across IAGs
+  hosts: gateway
+  gather_facts: false
+  vars:
+    ansible_connection: local
+  tasks:
+    - name: Login to IAG and get token
+      ansible.builtin.uri:
+        url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/login"
+        method: POST
+        body: '{"username": "{{ iag_username }}", "password": "{{ iag_password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: iag_token
+      when: inventory_hostname in groups["gateway"]
+
+    - name: Extract IAG token from login response
+      ansible.builtin.set_fact:
+        iag_auth_token: "{% set token_content = iag_token.content | from_json %}{{ token_content.token }}"
+      when: inventory_hostname in groups["gateway"]
+
+    - name: Get the latest script schema
+      ansible.builtin.uri: 
+        url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/scripts/{{ script_name }}/schema"
+        method: GET
+        return_content: yes
+        status_code: 200
+        headers:
+            Authorization: "{{ iag_auth_token }}"
+      run_once: true
+      register: schema_response
+    
+    - name: Display the schema
+      ansible.builtin.debug:
+        msg:
+          - "{{ schema_response.json }}"
+      run_once: true
+
+    - name: Update the script schema across all IAG
+      ansible.builtin.uri:
+        url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/scripts/{{ script_name }}/schema"
+        method: PUT
+        body: "{{ schema_response.json }}"
+        body_format: json
+        status_code: 200
+        headers:
+            Authorization: "{{ iag_auth_token }}"
+        return_content: true
+      register: update_response

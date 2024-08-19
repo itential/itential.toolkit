@@ -7,6 +7,24 @@ information.
 
 # Tools
 
+1. [Get IAP Token](#get-iap-token)
+2. [Restart Adapter](#restart-adapter)
+3. [Metrics](#metrics)
+4. [Adjusting Adapters' log level](#adjusting-adapters'-log-level)
+5. [Starting/Stopping Workersics](#starting/stopping-workers)
+6. [Mongo Dump](#mongo-dump)
+7. [Create Adapter](#create-adapter)
+8. [App Adapter Version](#app-adapter-version)
+9. [Sync IAG Custom Script Schema](#sync-iag-custom-script-schema)
+10. [Dependencies Version](#dependencies-version)
+11. [Switch Active Profile](#switch-active-profile)
+12. [Job and Task Worker Status](#job-and-task-worker-status)
+13. [RBAC Settings](#rbac-settings)
+14. [IAG Refresh Custom Script](#iag-refresh-custom-script)
+15. [Restart IAP](#restart-iap)
+16. [Restart IAG](#restart-iag)
+17. [Admin All Roles](#admin-all-roles)
+
 ## Get IAP Token
 This tool will fetch an IAP session token and display it to the screen. It
 requires the following variables, these should be defined in the hosts file,
@@ -353,3 +371,21 @@ Running playbook by providing username and password from command-line
 
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
 
+
+## Admin All Roles
+This tool will add all available roles to the admin user. It
+requires the following variables, these should be defined in the hosts file,
+as "extra-vars" on the command line, or a mixture of both. For example, the
+password  may not be approrpriate to keep in a hosts file and may be better
+suited for the command line.
+
+| NAME         | DESCRIPTION                                       |
+|--------------|---------------------------------------------------|
+| iap_port     | The HTTP port that the application is running on. |
+| ansible_host | The host ip or dns name used  by IAP.             |
+| iap_protocol | The HTTP protocol that is being used by IAP       |
+| iap_username | The application user's name                       |
+| iap_password | The application user's password                   |
+
+### Example
+`ansible-playbook playbooks/admin_all_roles.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password>'`

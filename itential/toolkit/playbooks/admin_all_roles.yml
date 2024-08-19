@@ -1,0 +1,75 @@
+---
+- name: Give admin@pronghorn user all roles
+  hosts: platform
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
+        method: POST
+        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: yes
+      register: token
+
+    - name: Extract token from login response
+      set_fact:
+        auth_token: "{{ token.content }}"
+
+    - name: Get admin user id
+      uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts?username=admin@pronghorn" 
+        method: GET
+        return_content: yes 
+        headers:
+          Cookie: "token={{auth_token}}"
+      register: response
+
+    - name: Extract admin user id
+      set_fact:
+        admin_user_id: "{{ response.json.results[0]._id }}"
+
+    - name: Get all role IDs
+      uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/roles?limit=2000"  
+        method: GET
+        return_content: yes  
+        headers:
+          Cookie: "token={{auth_token}}"
+      register: response  
+
+    - name: Extract role IDs into array
+      set_fact:
+        role_ids: "{{ response.json.results | map(attribute='_id') | list }}"
+
+    - name: Transform array of strings to array of objects
+      set_fact:
+        output_array: "{{ role_ids | map('regex_replace', '^(.*)$', '{\"roleId\": \"\\1\"}') | map('from_json') | list }}"
+
+    - name: Prepare PATCH request payload
+      set_fact:
+        patch_payload: |
+          {
+            "updates": {
+               "assignedRoles": {{ output_array }}
+            }
+          }
+
+    - name: Update admin account roles
+      uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts/{{admin_user_id}}"  
+        method: PATCH
+        body_format: json
+        body: "{{ patch_payload }}"
+        return_content: yes
+        headers:
+          Cookie: "token={{auth_token}}"
+      register: response_patch
+
+#    - name: Print PATCH response
+#      debug:
+#        var: response_patch.json

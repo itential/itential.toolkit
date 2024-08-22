@@ -25,7 +25,6 @@ information.
 16. [Restart IAG](#restart-iag)
 17. [Admin All Roles](#admin-all-roles)
 
-
 ## Get IAP Token
 This tool will fetch an IAP session token and display it to the screen. It
 requires the following variables, these should be defined in the hosts file,
@@ -376,17 +375,14 @@ Running playbook by providing username and password from command-line
 ## Admin All Roles
 This tool will add all available roles to the admin user. It
 requires the following variables, these should be defined in the hosts file,
-as "extra-vars" on the command line, or a mixture of both. For example, the
-password  may not be approrpriate to keep in a hosts file and may be better
-suited for the command line.
+as "extra-vars" on the command line, or a mixture of both. Any sensitive information, like  passwords, should be encrypted in the host file with ansible vault.
 
 | NAME         | DESCRIPTION                                       |
 |--------------|---------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on. |
-| ansible_host | The host ip or dns name used  by IAP.             |
-| iap_protocol | The HTTP protocol that is being used by IAP       |
+| iap_http_port| The HTTP port that the application is running on. |
+| iap_https_port| The HTTPs port that the application is running on. |
 | iap_username | The application user's name                       |
 | iap_password | The application user's password                   |
 
 ### Example
-`ansible-playbook playbooks/admin_all_roles.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password>'`
+`ansible-playbook playbooks/admin_all_roles.yml -i hosts.yaml --extra-vars 'iap_username=<some-user>' --vault-password-file .password`

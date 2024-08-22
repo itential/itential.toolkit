@@ -1,9 +1,22 @@
 ---
 - name: Give admin@pronghorn user all roles
-  hosts: platform
+  hosts: platform[0] # Only run this playbook once on a single server
   gather_facts: false
   connection: local
   tasks:
+
+    - name: Extract token from login response
+      set_fact:
+        iap_port: "{{ iap_https_port }}"
+        iap_protocol: https
+      when: iap_https | bool
+
+    - name: Extract token from login response
+      set_fact:
+        iap_port: "{{ iap_http_port }}"
+        iap_protocol: http
+      when: not iap_https | bool
+
     - name: Login to IAP and get token
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
@@ -22,7 +35,7 @@
 
     - name: Get admin user id
       uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts?username=admin@pronghorn" 
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts?username={{ iap_username }}" 
         method: GET
         return_content: yes 
         headers:

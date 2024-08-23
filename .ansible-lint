@@ -3,7 +3,7 @@
 
 # Exclude these files from the linter
 exclude_paths:
-  - .gitlab
+  - .github
 
 # Rules that we feel should not be errors but warnings
 warn_list:

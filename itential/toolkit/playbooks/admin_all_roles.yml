@@ -7,8 +7,8 @@
 
     - name: Determine IAP port and protocol
       ansible.builtin.set_fact:
-        iap_port: {{ iap_https | bool | ternary(iap_https_port, iap_http_port) }}
-        iap_protocol: {{ iap_https | bool | ternary('https', 'http') }}
+        iap_port: "{{ iap_https | bool | ternary(iap_https_port, iap_http_port) }}"
+        iap_protocol: "{{ iap_https | bool | ternary('https', 'http') }}"
 
     - name: Login to IAP and get token
       ansible.builtin.uri:

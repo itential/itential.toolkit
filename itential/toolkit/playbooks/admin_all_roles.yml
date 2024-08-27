@@ -1,0 +1,78 @@
+---
+- name: Give admin@pronghorn user all roles
+  hosts: platform[0] # Only run this playbook once on a single server
+  gather_facts: false
+  connection: local
+  tasks:
+
+    - name: Determine IAP port and protocol
+      ansible.builtin.set_fact:
+        iap_port: "{{ iap_https | bool | ternary(iap_https_port, iap_http_port) }}"
+        iap_protocol: "{{ iap_https | bool | ternary('https', 'http') }}"
+
+    - name: Login to IAP and get token
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
+        method: POST
+        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        status_code: 200
+        return_content: true
+      register: token
+
+    - name: Extract token from login response
+      ansible.builtin.set_fact:
+        auth_token: "{{ token.content }}"
+
+    - name: Get admin user id
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts?username={{ iap_username }}"
+        method: GET
+        return_content: true
+        headers:
+          Cookie: "token={{ auth_token }}"
+      register: response
+
+    - name: Extract admin user id
+      ansible.builtin.set_fact:
+        admin_user_id: "{{ response.json.results[0]._id }}"
+
+    - name: Get all role IDs
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/roles?limit=2000"
+        method: GET
+        return_content: true
+        headers:
+          Cookie: "token={{ auth_token }}"
+      register: response
+
+    - name: Extract role IDs into array
+      ansible.builtin.set_fact:
+        role_ids: "{{ response.json.results | map(attribute='_id') | list }}"
+
+    - name: Transform array of strings to array of objects
+      ansible.builtin.set_fact:
+        output_array: "{{ role_ids | map('regex_replace', '^(.*)$', '{\"roleId\": \"\\1\"}') | map('from_json') | list }}"
+
+    - name: Prepare PATCH request payload
+      ansible.builtin.set_fact:
+        patch_payload: |
+          {
+            "updates": {
+               "assignedRoles": {{ output_array }}
+            }
+          }
+
+    - name: Update admin account roles
+      ansible.builtin.uri:
+        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts/{{ admin_user_id }}"
+        method: PATCH
+        body_format: json
+        body: "{{ patch_payload }}"
+        return_content: true
+        headers:
+          Cookie: "token={{ auth_token }}"
+      register: response_patch
+      

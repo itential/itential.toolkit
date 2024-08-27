@@ -46,10 +46,10 @@ def query_last_run(db, worklfow_name):
 def within_x_days_ago(date_time_obj, num_of_days):
     try:
         now = datetime.now()
-        X_days_ago = now - relativedelta(days=num_of_days)
+        x_days_ago = now - relativedelta(days=num_of_days)
         
-        # Check if the given datetime is between X dayss ago and now
-        return X_days_ago <= date_time_obj <= now
+        # Check if the given datetime is between X days ago and now
+        return x_days_ago <= date_time_obj <= now
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -82,10 +82,9 @@ if __name__ == "__main__":
 
         # checking each argument
         for currentArgument, currentValue in arguments:
-            #print(f"currentArgument: {currentArgument} currentValue: {currentValue}")
             if currentArgument in ("-h", "--HELP"):
                 print ("")
-                print ("Usage: python3 unused_workflow_analysis.py [-h] [-d DAYS] [-U URI] [-D DB] [-u USERNAME] [-p PASSWORD]")
+                print ("Usage: python3 unused_workflow_analysis.py [-h] [-d DAYS] [-U URI] [-D DB] [-u USERNAME]")
                 print ("Options and Arguments:")
                 print ("-h               Display help menu")
                 print ("-d DAYS          Number of days to search for the last run of the workflow. Default to 180")
@@ -110,9 +109,6 @@ if __name__ == "__main__":
                 
             elif currentArgument in ("-u", "--USERNAME"):
                 username = currentValue
-
-            elif currentArgument in ("-n", "--NEVERRUN"):
-                display_never_run = True
                 
 
     except getopt.error as err:

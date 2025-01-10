@@ -38,7 +38,7 @@ options:
     type: bool
 
 author:
-  - Your Name <wade.stern@itential.com>
+  - Wade Stern <wade.stern@itential.com>
 '''
 
 EXAMPLES = r'''

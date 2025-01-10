@@ -1,6 +1,5 @@
 from ansible.module_utils.basic import AnsibleModule
 import requests
-import base64
 
 DOCUMENTATION = r'''
 ---
@@ -102,19 +101,12 @@ def main():
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
 
-        # Attempt to decode Base64-encoded response
-        raw_response = response.text.strip()  # Remove extra whitespace
-        try:
-            decoded_token = base64.b64decode(raw_response).decode('utf-8')
-            result['token'] = decoded_token
-        except (base64.binascii.Error, UnicodeDecodeError):
-            module.fail_json(msg=f"Unexpected response: {raw_response}")
+        result['token'] = response.text.strip()
 
         module.exit_json(**result)
 
     except requests.exceptions.RequestException as e:
         module.fail_json(msg=f"Failed to retrieve session token: {str(e)}")
-
 
 if __name__ == '__main__':
     main()

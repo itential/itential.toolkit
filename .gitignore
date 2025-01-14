@@ -1,0 +1,9 @@
+inventories/
+output/
+scripts/__pycache__/
+
+.DS_Store
+**.DS_Store
+**/ansible.cfg
+__pycache__/
+*.pyc

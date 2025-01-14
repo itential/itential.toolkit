@@ -1,0 +1,11 @@
+# Copyright (c) 2024, Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Activate job workers
+  iap_job_worker_control:
+    hostname: "{{ inventory_hostname }}"
+    port: "{{ iap_https_port if iap_https else iap_http_port }}"
+    https: "{{ iap_https }}"
+    token: "{{ token_result.token }}"
+    action: activate
+  register: job_activate_result

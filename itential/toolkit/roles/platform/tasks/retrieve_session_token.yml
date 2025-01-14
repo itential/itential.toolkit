@@ -1,0 +1,11 @@
+# Copyright (c) 2024, Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Retrieve IAP session token
+  iap_get_session_token:
+    username: "{{ iap_username }}"
+    password: "{{ iap_password }}"
+    hostname: "{{ inventory_hostname }}"
+    port: "{{ iap_https_port if iap_https else iap_http_port }}"
+    https: "{{ iap_https }}"
+  register: token_result

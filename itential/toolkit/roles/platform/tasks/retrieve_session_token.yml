@@ -2,10 +2,14 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 - name: Retrieve IAP session token
-  iap_get_session_token:
+  itential.toolkit.iap_get_session_token:
     username: "{{ iap_username }}"
     password: "{{ iap_password }}"
     hostname: "{{ inventory_hostname }}"
-    port: "{{ iap_https_port if iap_https else iap_http_port }}"
-    https: "{{ iap_https }}"
+    port: "{{ platform_https_port if platform_https else platform_http_port }}"
+    https: "{{ platform_https }}"
   register: token_result
+
+- name: Set IAP token variable
+  ansible.builtin.set_fact:
+    iap_token: "{{ token_result.token }}"

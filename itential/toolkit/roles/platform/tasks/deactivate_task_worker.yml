@@ -2,10 +2,10 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 - name: Deactivate task workers
-  iap_task_worker_control:
+  itential.toolkit.iap_task_worker_control:
     hostname: "{{ inventory_hostname }}"
-    port: "{{ iap_https_port if iap_https else iap_http_port }}"
-    https: "{{ iap_https }}"
-    token: "{{ token_result.token }}"
+    port: "{{ platform_https_port if platform_https else platform_http_port }}"
+    https: "{{ platform_https }}"
+    token: "{{ iap_token }}"
     action: deactivate
   register: task_deactivate_result

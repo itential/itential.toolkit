@@ -3,10 +3,10 @@ import requests
 
 DOCUMENTATION = r'''
 ---
-module: iap_check_worker_status
-short_description: Check the status of the jobs and tasks workers in IAP.
+module: iap_check_active_tasks
+short_description: Check the number of active tasks for an IAP host.
 description:
-  - This module uses the IAP APIs to check the status of the jobs and tasks workers.
+  - This module uses the IAP APIs to check the number of active "running" tasks on an IAP host.
   - It supports both HTTP and HTTPS protocols.
 options:
   hostname:
@@ -35,8 +35,8 @@ author:
 '''
 
 EXAMPLES = r'''
-- name: Check the status of jobs and tasks workers
-  iap_workers_status:
+- name: Check active tasks
+  iap_check_active_tasks:
     hostname: "iap.example.com"
     port: 3000
     https: false
@@ -45,9 +45,9 @@ EXAMPLES = r'''
 '''
 
 RETURN = r'''
-status:
-  description: The status of jobs and tasks workers returned by the API.
-  type: dict
+active_tasks:
+  description: The number of active tasks on the IAP host.
+  type: int
   returned: always
 '''
 
@@ -61,7 +61,7 @@ def main():
 
     result = dict(
         changed=False,
-        status={}
+        active_tasks=0
     )
 
     module = AnsibleModule(
@@ -75,22 +75,32 @@ def main():
     token = module.params['token']
 
     protocol = 'https' if https else 'http'
-    url = f"{protocol}://{hostname}:{port}/workflow_engine/workers/status"
+    base_url = f"{protocol}://{hostname}:{port}/operations-manager/tasks"
+
+    params = {
+        "equals[status]": "running"
+    }
 
     headers = {
         'Cookie': f"token={token}"
     }
 
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(base_url, headers=headers, params=params)
         response.raise_for_status()
 
-        # Parse and return the response
-        result['status'] = response.json()
+        # Parse the response JSON
+        tasks_response = response.json()
+        if "data" in tasks_response and isinstance(tasks_response["data"], list):
+            result['active_tasks'] = len(tasks_response["data"])
+            result['tasks'] = tasks_response["data"]
+        else:
+            module.fail_json(msg="Unexpected response format", response=tasks_response)
+
         module.exit_json(**result)
 
     except requests.exceptions.RequestException as e:
-        module.fail_json(msg=f"Failed to retrieve workers status: {str(e)}")
+        module.fail_json(msg=f"Failed to retrieve active tasks: {str(e)}")
 
 if __name__ == '__main__':
     main()

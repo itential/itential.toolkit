@@ -49,9 +49,6 @@ EXAMPLES = r'''
     port: 3000
     https: false
   register: result
-
-- debug:
-    msg: "Session token is {{ result.token }}"
 '''
 
 RETURN = r'''

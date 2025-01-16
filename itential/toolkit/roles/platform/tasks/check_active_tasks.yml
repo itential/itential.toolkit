@@ -1,8 +1,0 @@
-# Copyright (c) 2024, Itential, Inc
-# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
----
-- name: Check active tasks
-  itential.toolkit.iap_check_active_tasks:
-    platform_base_url: "{{ platform_base_url }}"
-    token: "{{ iap_token }}"
-  register: active_tasks

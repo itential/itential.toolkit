@@ -1,9 +1,0 @@
-# Copyright (c) 2024, Itential, Inc
-# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
----
-- name: Deactivate job workers
-  itential.toolkit.iap_job_worker_control:
-    platform_base_url: "{{ platform_base_url }}"
-    token: "{{ iap_token }}"
-    action: deactivate
-  register: job_deactivate_result

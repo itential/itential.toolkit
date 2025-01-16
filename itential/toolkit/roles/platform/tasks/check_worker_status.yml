@@ -1,8 +1,0 @@
-# Copyright (c) 2024, Itential, Inc
-# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
----
-- name: Check workers status
-  itential.toolkit.iap_check_worker_status:
-    platform_base_url: "{{ platform_base_url }}"
-    token: "{{ iap_token }}"
-  register: worker_status

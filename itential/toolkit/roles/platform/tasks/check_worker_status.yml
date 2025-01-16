@@ -3,8 +3,6 @@
 ---
 - name: Check workers status
   itential.toolkit.iap_check_worker_status:
-    hostname: "{{ inventory_hostname }}"
-    port: "{{ platform_https_port if platform_https else platform_http_port }}"
-    https: "{{ platform_https }}"
+    platform_base_url: "{{ platform_base_url }}"
     token: "{{ iap_token }}"
   register: worker_status

@@ -1,24 +1,6 @@
 # Copyright (c) 2024, Itential, Inc
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
-# The directory to install IAP in
-platform_install_dir: /opt/itential
-
-# The directory to write logs to
-platform_log_dir: /var/log/itential
-
-# The default user that runs the server process
-platform_user: itential
-
-# The default group that runs the server process
-platform_group: itential
-
-# The directory to store the vault root key in
-platform_vault_token_dir: "{{ iap_install_dir }}/vault"
-
-# Flag to perform mongo backup when using upgrade-iap role
-platform_mongo_backup: true
-
 # Run IAP server as HTTPS
 platform_https: false
 

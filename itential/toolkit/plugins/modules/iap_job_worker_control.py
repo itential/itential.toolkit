@@ -7,23 +7,13 @@ module: iap_job_worker_control
 short_description: Control the job workers for an IAP host.
 description:
   - This module activates or deactivates the job workers on an IAP host using the IAP APIs.
-  - It supports both HTTP and HTTPS protocols.
+  - It uses the `platform_base_url` to determine the endpoint URL.
 options:
-  hostname:
+  platform_base_url:
     description:
-      - Hostname or IP address of the IAP server.
+      - Base URL of the IAP server, including protocol, hostname, and port.
     required: true
     type: str
-  port:
-    description:
-      - Port on which the IAP server is running.
-    required: true
-    type: int
-  https:
-    description:
-      - Whether to use HTTPS for the connection.
-    required: true
-    type: bool
   token:
     description:
       - A valid session token for authentication.
@@ -46,17 +36,13 @@ author:
 EXAMPLES = r'''
 - name: Activate job workers
   iap_job_worker_control:
-    hostname: "iap.example.com"
-    port: 3000
-    https: false
+    platform_base_url: "http://iap.example.com:3000"
     token: "abc123"
     action: activate
 
 - name: Deactivate job workers
   iap_job_worker_control:
-    hostname: "iap.example.com"
-    port: 3000
-    https: true
+    platform_base_url: "https://iap.example.com:3000"
     token: "def456"
     action: deactivate
 '''
@@ -70,9 +56,7 @@ message:
 
 def main():
     module_args = dict(
-        hostname=dict(type='str', required=True),
-        port=dict(type='int', required=True),
-        https=dict(type='bool', required=True),
+        platform_base_url=dict(type='str', required=True),
         token=dict(type='str', required=True, no_log=True),
         action=dict(type='str', required=True, choices=['activate', 'deactivate'])
     )
@@ -87,15 +71,11 @@ def main():
         supports_check_mode=False
     )
 
-    hostname = module.params['hostname']
-    port = module.params['port']
-    https = module.params['https']
+    platform_base_url = module.params['platform_base_url']
     token = module.params['token']
     action = module.params['action']
 
-    protocol = 'https' if https else 'http'
-    endpoint = f"/workflow_engine/jobWorker/{action}"
-    url = f"{protocol}://{hostname}:{port}{endpoint}"
+    url = f"{platform_base_url}/workflow_engine/jobWorker/{action}"
 
     headers = {
         'Cookie': f"token={token}"

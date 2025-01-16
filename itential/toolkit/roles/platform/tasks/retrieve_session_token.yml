@@ -5,9 +5,7 @@
   itential.toolkit.iap_get_session_token:
     username: "{{ iap_username }}"
     password: "{{ iap_password }}"
-    hostname: "{{ inventory_hostname }}"
-    port: "{{ platform_https_port if platform_https else platform_http_port }}"
-    https: "{{ platform_https }}"
+    platform_base_url: "{{ platform_base_url }}"
   register: token_result
 
 - name: Set IAP token variable

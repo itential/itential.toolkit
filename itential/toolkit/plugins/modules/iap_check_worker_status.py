@@ -9,21 +9,11 @@ description:
   - This module uses the IAP APIs to check the status of the jobs and tasks workers.
   - It supports both HTTP and HTTPS protocols.
 options:
-  hostname:
+  platform_base_url:
     description:
-      - Hostname or IP address of the IAP server.
+      - Base URL of the IAP server, including protocol, hostname, and port.
     required: true
     type: str
-  port:
-    description:
-      - Port on which the IAP server is running.
-    required: true
-    type: int
-  https:
-    description:
-      - Whether to use HTTPS for the connection.
-    required: true
-    type: bool
   token:
     description:
       - A valid session token for authentication.
@@ -37,9 +27,7 @@ author:
 EXAMPLES = r'''
 - name: Check the status of jobs and tasks workers
   iap_workers_status:
-    hostname: "iap.example.com"
-    port: 3000
-    https: false
+    platform_base_url: "http://iap.example.com:3000"
     token: "abc123"
   register: result
 '''
@@ -53,9 +41,7 @@ status:
 
 def main():
     module_args = dict(
-        hostname=dict(type='str', required=True),
-        port=dict(type='int', required=True),
-        https=dict(type='bool', required=True),
+        platform_base_url=dict(type='str', required=True),
         token=dict(type='str', required=True, no_log=True)
     )
 
@@ -69,13 +55,10 @@ def main():
         supports_check_mode=False
     )
 
-    hostname = module.params['hostname']
-    port = module.params['port']
-    https = module.params['https']
+    platform_base_url = module.params['platform_base_url']
     token = module.params['token']
 
-    protocol = 'https' if https else 'http'
-    url = f"{protocol}://{hostname}:{port}/workflow_engine/workers/status"
+    url = f"{platform_base_url}/workflow_engine/workers/status"
 
     headers = {
         'Cookie': f"token={token}"
@@ -85,7 +68,6 @@ def main():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        # Parse and return the response
         result['status'] = response.json()
         module.exit_json(**result)
 

@@ -3,8 +3,6 @@
 ---
 - name: Check active tasks
   itential.toolkit.iap_check_active_tasks:
-    hostname: "{{ inventory_hostname }}"
-    port: "{{ platform_https_port if platform_https else platform_http_port }}"
-    https: "{{ platform_https }}"
+    platform_base_url: "{{ platform_base_url }}"
     token: "{{ iap_token }}"
   register: active_tasks

@@ -20,21 +20,11 @@ options:
     required: true
     type: str
     no_log: true
-  hostname:
+  platform_base_url:
     description:
-      - Hostname or IP address of the IAP server.
+      - Base URL of the IAP server, including protocol, hostname, and port.
     required: true
     type: str
-  port:
-    description:
-      - Port on which the IAP server is running.
-    required: true
-    type: int
-  https:
-    description:
-      - Whether to use HTTPS for the connection.
-    required: true
-    type: bool
 
 author:
   - Wade Stern <wade.stern@itential.com>
@@ -45,9 +35,7 @@ EXAMPLES = r'''
   iap_get_session_token:
     username: "admin"
     password: "mypassword"
-    hostname: "iap.example.com"
-    port: 3000
-    https: false
+    platform_base_url: "http://iap.example.com:3000"
   register: result
 '''
 
@@ -62,9 +50,7 @@ def main():
     module_args = dict(
         username=dict(type='str', required=True),
         password=dict(type='str', required=True, no_log=True),
-        hostname=dict(type='str', required=True),
-        port=dict(type='int', required=True),
-        https=dict(type='bool', required=True)
+        platform_base_url=dict(type='str', required=True)
     )
 
     result = dict(
@@ -79,12 +65,9 @@ def main():
 
     username = module.params['username']
     password = module.params['password']
-    hostname = module.params['hostname']
-    port = module.params['port']
-    https = module.params['https']
+    platform_base_url = module.params['platform_base_url']
 
-    protocol = 'https' if https else 'http'
-    url = f"{protocol}://{hostname}:{port}/login"
+    url = f"{platform_base_url}/login"
 
     headers = {'Content-Type': 'application/json'}
     payload = {

@@ -3,9 +3,7 @@
 ---
 - name: Activate task workers
   itential.toolkit.iap_task_worker_control:
-    hostname: "{{ inventory_hostname }}"
-    port: "{{ platform_https_port if platform_https else platform_http_port }}"
-    https: "{{ platform_https }}"
+    platform_base_url: "{{ platform_base_url }}"
     token: "{{ iap_token }}"
     action: activate
   register: task_activate_result

@@ -10,7 +10,6 @@
   tasks:
     - name: Get Auth token
       itential.platform.auth_token:
-      delegate_to: localhost
       register: auth_token_response
       when: iap_auth_token is not defined
 
@@ -21,16 +20,13 @@
 
     - name: Deactivate job workers
       itential.platform.deactivate_job_worker:
-      delegate_to: localhost
 
     - name: Deactivate task workers
       itential.platform.deactivate_task_worker:
-      delegate_to: localhost
 
     - name: Check active tasks until none are running
       itential.platform.get_tasks:
         status: running
-      delegate_to: localhost
       register: active_tasks
       until: active_tasks.json.data | length == 0
       retries: 30

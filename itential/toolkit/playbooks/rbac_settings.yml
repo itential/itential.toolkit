@@ -8,53 +8,11 @@
   hosts: platform
   gather_facts: false
   tasks:
-    - name: Get Auth token
-      itential.platform.auth_token:
-      delegate_to: localhost
-      register: auth_token_response
-      when: iap_auth_token is not defined
-
-    - name: Store the auth token
-      ansible.builtin.set_fact:
-        iap_auth_token: "{{ auth_token_response.auth_token }}"
-      when: iap_auth_token is not defined
-
     - name: Retrieve authorization accounts
       itential.platform.generic_request:
         method: GET
         endpoint: "/authorization/accounts"
       register: auth_accounts
-
-    - name: Normalize users variable (ensure it exists and is always a list)
-      ansible.builtin.set_fact:
-        filtered_users: >-
-          {{
-            ([users] if users is string else users)
-            | default(auth_accounts.json.results | map(attribute='username') | list, true)
-          }}
-
-    - name: Filter authorization accounts based on users variable
-      ansible.builtin.set_fact:
-        auth_accounts: >-
-          {{ auth_accounts.json.results | selectattr('username', 'in', filtered_users) | list }}
-
-    - name: Flatten assigned and inherited role IDs into a single list
-      ansible.builtin.set_fact:
-        auth_accounts: >-
-          {{
-            auth_accounts | map(
-              'combine',
-              {
-                'roleIds': (
-                  (item.assignedRoles | default([]) | map(attribute='roleId') | list)
-                  + (item.inheritedRoles | default([]) | map(attribute='roleId') | list)
-                )
-              }
-            ) | list
-          }}
-      loop: "{{ auth_accounts }}"
-      loop_control:
-        loop_var: item
 
     - name: Retrieve available roles
       itential.platform.generic_request:
@@ -62,50 +20,13 @@
         endpoint: "/authorization/roles"
       register: roles_response
 
-    - name: Process roles into a dictionary
-      ansible.builtin.set_fact:
-        roles_dict: >-
-          {{
-            dict(
-              roles_response.json.results
-              | map(attribute="_id") | zip(
-                roles_response.json.results
-                | map(attribute="provenance") | zip(
-                  roles_response.json.results | map(attribute="name")
-                ) | map("join", ".")
-              )
-            )
-          }}
+    - name: Process RBAC Data
+      itential.toolkit.iap_rbac_processing:
+        auth_accounts: "{{ auth_accounts.json.results }}"
+        roles_response: "{{ roles_response.json.results }}"
+        users: "{{ users }}"
+      register: rbac_results
 
-    - name: Extract username and assigned roles for filtered users
-      ansible.builtin.set_fact:
-        users_roles: >-
-          {{
-            auth_accounts | map(
-              'combine',
-              {
-                'roles': (
-                  item.roleIds | select('in', roles_dict.keys()) | map('extract', roles_dict) | list
-                )
-              }
-            ) | list
-          }}
-      loop: "{{ auth_accounts | default([]) }}"
-      loop_control:
-        loop_var: item
-
-    - name: Ensure users_roles is always defined
-      ansible.builtin.set_fact:
-        users_roles: "{{ users_roles | default([], true) }}"
-
-    - name: Prepare display message
-      ansible.builtin.set_fact:
-        message: >-
-          {% for user in users_roles %}
-          Roles assigned for {{ user.username }} at {{ ansible_host | default(inventory_hostname) }}:
-          {{ user.roles | join(', ') }}
-          {% endfor %}
-
-    - name: Display the RBAC Settings for a user
+    - name: Display the RBAC Settings for users
       ansible.builtin.debug:
-        msg: "{{ message.split('\n') }}"
+        msg: "{{ rbac_results.formatted_message.split('\n') }}"

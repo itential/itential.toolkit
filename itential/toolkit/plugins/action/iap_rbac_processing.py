@@ -1,7 +1,5 @@
-# Copyright 2024, Itential Inc. All Rights Reserved
-
-# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt or https://www.gnu.org/licenses/gpl-3.0.txt)
-# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2022, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 # Generates a list of roles assigned to each user provided in the users parameter.
 # Example:
@@ -35,11 +33,17 @@ class ActionModule(ActionBase):
 
         # Validate input types
         if not isinstance(auth_accounts, list) or not isinstance(roles_response, list):
-            return {"failed": True, "msg": "Both 'auth_accounts' and 'roles_response' must be lists."}
+            return {
+                "failed": True,
+                "msg": "Both 'auth_accounts' and 'roles_response' must be lists."
+            }
 
         # Validate and normalize `users`
         if not users:
-            return {"failed": True, "msg": "The 'users' parameter must be provided and cannot be empty."}
+            return {
+                "failed": True,
+                "msg": "The 'users' parameter must be provided and cannot be empty."
+            }
         if isinstance(users, str):
             users = [users]
         elif not isinstance(users, list):
@@ -63,7 +67,9 @@ class ActionModule(ActionBase):
                     [role["roleId"] for role in acc.get("assignedRoles", [])] +
                     [role["roleId"] for role in acc.get("inheritedRoles", [])]
                 )
-                assigned_roles = [roles_dict[role_id] for role_id in role_ids if role_id in roles_dict]
+                assigned_roles = [
+                    roles_dict[role_id] for role_id in role_ids if role_id in roles_dict
+                ]
             else:
                 assigned_roles = ["User not found"]
 

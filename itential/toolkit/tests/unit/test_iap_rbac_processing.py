@@ -58,9 +58,14 @@ def test_valid_user(mock_action_module, module_args, default_task_vars):
     module_args["users"] = ["admin"]
     result = run_module(mock_action_module, module_args, default_task_vars)
 
-    expected_message = "Roles assigned for admin at 127.0.0.1:\nAdapterModels.admin, AGManager.admin"
-
-    assert result["users_roles"] == [{"username": "admin", "roles": ["AdapterModels.admin", "AGManager.admin"]}]
+    expected_message = (
+        "Roles assigned for admin at 127.0.0.1:\n"
+        "AdapterModels.admin, AGManager.admin"
+    )
+    assert result["users_roles"] == [{
+        "username": "admin",
+        "roles": ["AdapterModels.admin", "AGManager.admin"]
+    }]
     assert result["formatted_message"] == expected_message
 
 
@@ -97,9 +102,16 @@ def test_users_as_string(mock_action_module, module_args, default_task_vars):
     module_args["users"] = "admin"  # Single string instead of list
     result = run_module(mock_action_module, module_args, default_task_vars)
 
-    expected_message = "Roles assigned for admin at 127.0.0.1:\nAdapterModels.admin, AGManager.admin"
+    expected_message = (
+        "Roles assigned for admin at 127.0.0.1:\n"
+        "AdapterModels.admin, AGManager.admin"
+    )
 
-    assert result["users_roles"] == [{"username": "admin", "roles": ["AdapterModels.admin", "AGManager.admin"]}]
+    assert result["users_roles"] == [{
+        "username": "admin",
+        "roles": ["AdapterModels.admin","AGManager.admin"]
+    }]
+
     assert result["formatted_message"] == expected_message
 
 
@@ -108,7 +120,10 @@ def test_empty_users_list(mock_action_module, module_args, default_task_vars):
     module_args["users"] = []  # Empty list
     result = run_module(mock_action_module, module_args, default_task_vars)
 
-    assert result == {"failed": True, "msg": "The 'users' parameter must be provided and cannot be empty."}
+    assert result == {
+        "failed": True,
+        "msg": "The 'users' parameter must be provided and cannot be empty."
+    }
 
 
 def test_invalid_users_type(mock_action_module, module_args, default_task_vars):
@@ -124,7 +139,10 @@ def test_invalid_auth_accounts_type(mock_action_module, module_args, default_tas
     module_args["auth_accounts"] = {"username": "admin"}  # Invalid type (dict instead of list)
     result = run_module(mock_action_module, module_args, default_task_vars)
 
-    assert result == {"failed": True, "msg": "Both 'auth_accounts' and 'roles_response' must be lists."}
+    assert result == {
+        "failed": True,
+        "msg": "Both 'auth_accounts' and 'roles_response' must be lists."
+    }
 
 
 def test_invalid_roles_response_type(mock_action_module, module_args, default_task_vars):
@@ -132,4 +150,7 @@ def test_invalid_roles_response_type(mock_action_module, module_args, default_ta
     module_args["roles_response"] = "invalid_data"  # Invalid type (string instead of list)
     result = run_module(mock_action_module, module_args, default_task_vars)
 
-    assert result == {"failed": True, "msg": "Both 'auth_accounts' and 'roles_response' must be lists."}
+    assert result == {
+        "failed": True,
+        "msg": "Both 'auth_accounts' and 'roles_response' must be lists."
+    }

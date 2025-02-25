@@ -1,4 +1,4 @@
-# Copyright (c) 2023, Itential, LLC
+# Copyright (c) 2024, Itential, Inc
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
@@ -7,103 +7,26 @@
 - name: RBAC Settings
   hosts: platform
   gather_facts: false
-  vars: 
-    ansible_connection: local
-
   tasks:
-    - name: Login to IAP and get token
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
-        method: POST
-        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
-        body_format: json
-        headers:
-          Content-Type: "application/json"
-        status_code: 200
-        return_content: yes
-      register: token
-
-    - name: Extract token from login response
-      set_fact:
-        auth_token: "?token={{ token.content }}"
-    
-    - name: Get the list of all users
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts{{ auth_token }}&limit=0"
+    - name: Retrieve authorization accounts
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: yes
-      register: accounts_response
-    
-    - name: Grab user id of the selected usernames from the response
-      set_fact:
-        users_id: |
-          {{ accounts_response.json.results | selectattr("username", "in", users.split(","))| map(attribute="_id") }}
+        endpoint: "/authorization/accounts"
+      register: auth_accounts
 
-    - name: Get the list of available roles
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/roles{{ auth_token }}&limit=0"
+    - name: Retrieve available roles
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: yes
+        endpoint: "/authorization/roles"
       register: roles_response
-    
-    - name: Grab id, name and provenance of the roles
-      set_fact: 
-        roles_dict: |
-                {% set roles_content = roles_response.content | from_json  %}
-                {% set roles_results = roles_content.results %}
-                {% set roles = dict() %}
-                {% for role in roles_results %}
-                {% set value = role.provenance+'.'+role.name %}
-                {% set x = roles.__setitem__(role._id, value) %}
-                {% endfor %}
-                {{ roles }}
-    
-    - name: Get the user details
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/authorization/accounts/{{ item }}{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: yes
-      loop: "{{ users_id }}"
-      register: users_response
 
-    - name: Grab username and assigned roles of all users
-      set_fact: 
-        users_roles: |
-                {% set users_results = users_response.results %}
-                {% set users_json = users_results | map(attribute='json') %}
-                {% set users = [] %}
-                {% for user in users_json %}
-                {% set new_user = dict() %}
-                {% set x = new_user.__setitem__('username', user.username) %}
-                {% set assignedRoles = user.assignedRoles | map(attribute='roleId') %}
-                {% set roles = [] %}
-                {% for role in assignedRoles %}
-                {% set x = roles.append(roles_dict[role]) %}
-                {% endfor %}
-                {% set inheritedRoles = user.inheritedRoles | map(attribute='roleId') %}
-                {% for role in inheritedRoles %}
-                {% set x = roles.append(roles_dict[role]) %}
-                {% endfor %}
-                {% set x = new_user.__setitem__('roles', roles) %}
-                {% set x = users.append(new_user) %}
-                {% endfor %}
-                {{ users }}
-    
-   
-    - name: Prepare Display message
-      set_fact:
-        message: |- 
-              {% for user in users_roles %}
-              Roles assigned for {{ user.username }} at {{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}
-              ====================================================================
-              {{ user.roles }}
+    - name: Process RBAC Data
+      itential.toolkit.iap_rbac_processing:
+        auth_accounts: "{{ auth_accounts.json.results }}"
+        roles_response: "{{ roles_response.json.results }}"
+        users: "{{ users }}"
+      register: rbac_results
 
-              {% endfor %}
-
-    - name: Display the RBAC Settings for a user
+    - name: Display the RBAC Settings for users
       ansible.builtin.debug:
-        msg:
-          - "{{ message.split('\n') }}"
+        msg: "{{ rbac_results.formatted_message.split('\n') }}"

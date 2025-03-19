@@ -1,8 +1,20 @@
 # Copyright (c) 2024, Itential, Inc
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
+# This playbook retrieves RBAC (Role-Based Access Control) settings for one or more users.
+# It gathers authorization accounts and roles from the Itential Platform API, then processes
+# the data to display the RBAC settings for the specified users.
+
+# The 'users' variable can be provided as:
+# - A single username (string)
+# - A list of usernames (list)
+
 # Example usage:
-# ansible-playbook -i hosts rbac_settings.yml
+# Pass a single user:
+# ansible-playbook -i hosts rbac_settings.yml -e users=admin
+
+# Pass multiple users:
+# ansible-playbook -i hosts rbac_settings.yml -e "users=['admin','alex','sam']
 
 - name: RBAC Settings
   hosts: platform

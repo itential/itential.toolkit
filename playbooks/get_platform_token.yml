@@ -5,6 +5,7 @@
 - name: Get Platform token
   hosts: platform
   gather_facts: false
+  connection: local
   roles:
     - auth_token
   tasks:

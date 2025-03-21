@@ -4,8 +4,7 @@
 - name: Adapters log level
   hosts: platform
   gather_facts: false
-  vars:
-    ansible_connection: local
+  connection: local
   roles:
     - auth_token
   tasks:
@@ -19,10 +18,6 @@
       ansible.builtin.set_fact:
         adapters: ["{{ adapters }}"]
       when: adapters is string
-
-    - name: Debug adapters
-      ansible.builtin.debug:
-        var: adapters
 
     - name: Set log level for adapters
       itential.platform.set_adapter_log_level:

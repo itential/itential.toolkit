@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from ansible_collections.itential.toolkit.plugins.action.iap_rbac_processing import ActionModule
+from ansible_collections.itential.toolkit.plugins.action.platform_rbac_processing import ActionModule
 
 
 @pytest.fixture

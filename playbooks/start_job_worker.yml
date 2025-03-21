@@ -1,0 +1,11 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts start_job_worker.yml
+- name: Platform start job worker
+  hosts: platform
+  gather_facts: false
+  tasks:
+    - name: Start job worker
+      itential.platform.activate_job_worker:

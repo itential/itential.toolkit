@@ -1,36 +1,26 @@
 # Copyright (c) 2022, Itential, LLC
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
+# This playbook restarts one or more adapters on the Itential Platform using the Platform API.
+# It accepts adapter names via the 'adapters' variable and invokes the restart action for each.
 
-- hosts: platform
+# The 'adapters' variable can be provided as:
+# - A single adapter name (string)
+# - A list of adapter names (list)
+
+# Example usage:
+# Restart a single adapter:
+# ansible-playbook -i hosts restart_adapters.yml -e adapters=netbox
+
+# Restart multiple adapters:
+# ansible-playbook -i hosts restart_adapters.yml -e "adapters=['netbox','servicenow','infoblox']"
+
+- name: Restart Adapters
+  hosts: platform
+  gather_facts: false
+  roles:
+    - auth_token
   tasks:
-
-    # Request an IAP session token to use with the following IAG requests.
-    # Register the response from this login service to be referenced by later
-    # tasks.
-    - name: Get IAP token
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ inventory_hostname }}:{{ iap_port }}/login"
-        method: POST
-        body_format: json
-        follow_redirects: true
-        body:
-          user:
-            username: "{{ iap_username }}"
-            password: "{{ iap_password }}"
-      register: token_response
-
-    # Using the requested token from the task above, invoke the API that will
-    # restart each of the adapters defined in the "adapters" variable. The
-    # "adapters" variable is a comma separated list of adapter names. This task
-    # will loop through each of those names and restart them using the API.
-    - name: Restart adapters
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ inventory_hostname }}:{{ iap_port }}/adapters/{{ item.strip() }}/restart?token={{ token_response.cookies.token }}"
-        method: PUT
-        body_format: json
-        body: "{}"
-        headers:
-          accept: application/json
-        follow_redirects: true
-      with_items: "{{ adapters.split(',') }}"
+    - name: Restart specified adapters
+      itential.platform.restart_adapters:
+        adapter_names: "{{ adapters }}"

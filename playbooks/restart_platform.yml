@@ -1,0 +1,11 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook restart_Platform.yml -i hosts
+- name: Restart Platform
+  hosts: platform
+  gather_facts: false
+  roles:
+    - auth_token
+    - restart_platform

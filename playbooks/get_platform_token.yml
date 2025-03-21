@@ -1,0 +1,13 @@
+# Copyright (c) 2022, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+
+- name: Get Platform token
+  hosts: platform
+  gather_facts: false
+  roles:
+    - auth_token
+  tasks:
+    - name: Display token
+      ansible.builtin.debug:
+        msg: "{{ platform_auth_token }}"

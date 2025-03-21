@@ -1,0 +1,22 @@
+# Copyright (c) 2024, Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Deactivate job workers
+  itential.platform.deactivate_job_worker:
+
+- name: Deactivate task workers
+  itential.platform.deactivate_task_worker:
+
+- name: Wait until only manual tasks remain (or none)
+  itential.platform.get_tasks:
+    status: running
+  register: active_tasks
+  until: (active_tasks.json.data | rejectattr('type', 'equalto', 'manual') | list | length) == 0
+  retries: 30
+  delay: 10
+
+- name: Restart Platform
+  ansible.builtin.systemd:
+    name: itential-platform
+    state: restarted
+  become: true

@@ -1,0 +1,11 @@
+# Copyright (c) 2023, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# Example usage:
+# ansible-playbook -i hosts stop_task_worker.yml
+- name: Platform stop task worker
+  hosts: platform
+  gather_facts: false
+  tasks:
+    - name: Stop task worker
+      itential.platform.deactivate_task_worker:

@@ -18,8 +18,6 @@
 - name: Restart Adapters
   hosts: platform
   gather_facts: false
-  roles:
-    - auth_token
   tasks:
     - name: Restart specified adapters
       itential.platform.restart_adapters:

@@ -4,7 +4,7 @@
 # Generates a list of roles assigned to each user provided in the users parameter.
 # Example:
 # - name: Process RBAC Data
-#   itential.toolkit.iap_rbac_processing:
+#   itential.toolkit.platform_rbac_processing:
 #     auth_accounts: "{{ auth_accounts.json.results }}"
 #     roles_response: "{{ roles_response.json.results }}"
 #     users: "{{ users }}"

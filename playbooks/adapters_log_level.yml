@@ -1,6 +1,26 @@
 # Copyright (c) 2023, Itential, LLC
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
+# This playbook sets the log level for one or more adapters on the Itential Platform.
+# The adapter names are provided via the 'adapters' variable as a list.
+# The transport used for logging defaults to 'file' but can be overridden.
+
+# The 'adapters' variable must be provided as:
+# - A list of adapter names (list)
+
+# The 'log_level' variable must be one of:
+# - error, warn, info, debug, trace, spam
+
+# The 'transport' variable is optional and defaults to "file".
+# - Common values: file, console
+
+# Example usage:
+# Set log level to "error" for adapters:
+# ansible-playbook -i hosts adapters_log_level.yml -e "log_level=error adapters=['netbox','servicenow']"
+
+# Set log level to "info" with custom transport:
+# ansible-playbook -i hosts adapters_log_level.yml -e "log_level=info adapters=['netbox'] transport=console"
+
 - name: Adapters log level
   hosts: platform
   gather_facts: false
@@ -14,20 +34,15 @@
         msg: "Invalid log level selected. Please choose one of: error, warn, info, debug, trace, spam."
       when: log_level not in ['error', 'warn', 'info', 'debug', 'trace', 'spam']
 
-    - name: Normalize adapters string to list
-      ansible.builtin.set_fact:
-        adapters: ["{{ adapters }}"]
-      when: adapters is string
-
     - name: Set log level for adapters
       itential.platform.set_adapter_log_level:
         adapter_name: "{{ item }}"
         log_level: "{{ log_level }}"
-        transport: file
+        transport: "{{ transport | default('file') }}"
       loop: "{{ adapters }}"
       loop_control:
         loop_var: item
 
     - name: Restart adapters
-      itential.platform.restart_adapters:
-        adapter_names: "{{ adapters }}"
+      ansible.builtin.include_role:
+        name: restart_adapters

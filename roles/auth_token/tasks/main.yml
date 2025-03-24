@@ -1,0 +1,12 @@
+# Copyright (c) 2024, Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Get Auth token
+  itential.platform.auth_token:
+  register: auth_token_response
+  when: platform_auth_token is not defined
+
+- name: Store the auth token
+  ansible.builtin.set_fact:
+    platform_auth_token: "{{ auth_token_response.auth_token }}"
+  when: platform_auth_token is not defined

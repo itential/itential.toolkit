@@ -1,70 +1,48 @@
 # Copyright (c) 2023, Itential, LLC
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
-# Example usage: 
-# ansible-playbook -i hosts adapters_log_level.yml -e 'log_level=error'
+# This playbook sets the log level for one or more adapters on the Itential Platform.
+# The adapter names are provided via the 'adapters' variable as a list.
+# The transport used for logging defaults to 'file' but can be overridden.
+
+# The 'adapters' variable must be provided as:
+# - A list of adapter names (list)
+
+# The 'log_level' variable must be one of:
+# - error, warn, info, debug, trace, spam
+
+# The 'transport' variable is optional and defaults to "file".
+# - Common values: file, console
+
+# Example usage:
+# Set log level to "error" for adapters:
+# ansible-playbook -i hosts adapters_log_level.yml -e "log_level=error adapters=['netbox','servicenow']"
+
+# Set log level to "info" with custom transport:
+# ansible-playbook -i hosts adapters_log_level.yml -e "log_level=info adapters=['netbox'] transport=console"
+
 - name: Adapters log level
   hosts: platform
   gather_facts: false
-  vars:
-    ansible_connection: local
+  connection: local
+  roles:
+    - auth_token
   tasks:
 
     - name: Validate log level input
-      fail:
-        msg: "Invalid log level selected. Please choose one of the valid log levels"
+      ansible.builtin.fail:
+        msg: "Invalid log level selected. Please choose one of: error, warn, info, debug, trace, spam."
       when: log_level not in ['error', 'warn', 'info', 'debug', 'trace', 'spam']
 
-    - name: Login to IAP and get token
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
-        method: POST
-        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
-        body_format: json
-        headers:
-          Content-Type: "application/json"
-        status_code: 200
-        return_content: yes
-      register: token
-
-    - name: Extract token from login response
-      set_fact:
-        auth_token: "?token={{ token.content }}"
-
-    - name: Get adapters list
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/adapters{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: yes
-      register: response
-
-    - name: Extract adapters list from the response
-      set_fact:
-        adapters: "{{ response.json.results }}"
-    
-    - name: Create array of "name" values
-      set_fact:
-        adapter_list: "{{ adapters | map(attribute='data.name') | map('regex_replace', ' ', '%20') | list }}"
-
-    - name: Display result
-      debug:
-        var: adapter_list
-
-    - name: Set log level
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/adapters/{{ item }}/loglevel{{ auth_token }}"
-        method: PUT
-        status_code: 200
-        return_content: yes
-        body: {
-          "properties": {
-            "transport": "file",
-            "level": "{{ log_level }}"
-          }
-        }
-        body_format: json
-      loop: "{{ adapter_list }}"
+    - name: Set log level for adapters
+      itential.platform.set_adapter_log_level:
+        adapter_name: "{{ item }}"
+        log_level: "{{ log_level }}"
+        transport: "{{ transport | default('file') }}"
+      loop: "{{ adapters }}"
       loop_control:
         loop_var: item
 
+    - name: Restart adapters
+      ansible.builtin.include_role:
+        name: restart_adapters

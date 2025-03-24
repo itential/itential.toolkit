@@ -5,9 +5,47 @@ recommended methods for performing administration tasks, making adminstrative
 changes to the platforms, and interrogating dependent systems for runtime
 information.
 
+## Connection Variables
+
+Playbooks in this collection need to connect to some combination of:
+- **Host Machines** (via SSH), or
+- The **Itential Platform Service** (via API).
+- The **IAG Service** (via API).
+
+### Ansible Connection Variables
+To connect to the instances using Ansible:
+- `ansible_user`: The SSH username.
+- One of the following authentication methods:
+  - `ansible_password`: SSH password *(can be prompted with `--ask-pass`)*.
+  - `ansible_ssh_private_key_file`: Path to SSH private key *(can be passed with `--private-key`)*.
+
+### Itential Platform API Connection Variables
+To connect to the Itential Platform API, provide 
+- `platform_port`: The port that platform is accessible on
+- `platform_https`: Boolean that describes HTTPS (`true`) or HTTP (`false`) for the Platform API.
+- Either:
+    - `platform_username` and `platform_password`, **or**
+    - `platform_auth_token`.
+
+### IAG API Connection Variables
+To connect to the IAG API, provide 
+- `iag_port`: The port that IAG is accessible on
+- `iag_https`: Boolean that describes HTTPS (`true`) or HTTP (`false`) for the IAG API.
+- Either:
+    - `iag_username` and `iag_password`, **or**
+    - `iag_auth_token`.
+
+### Providing Variables
+Variables can be:
+- Defined in an **inventory file (hosts file)**.
+- Passed via the command line using `--extra-vars` or `-e`.
+
+Example:
+`ansible-playbook playbook.yml -i hosts.yaml --extra-vars 'platform_auth_token=<token>'`
+
 # Tools
 
-1. [Get IAP Token](#get-iap-token)
+1. [Get Platform Token](#get-platform-token)
 2. [Restart Adapter](#restart-adapter)
 3. [Metrics](#metrics)
 4. [Adjusting Adapters' log level](#adjusting-adapters'-log-level)
@@ -21,41 +59,26 @@ information.
 12. [Job and Task Worker Status](#job-and-task-worker-status)
 13. [RBAC Settings](#rbac-settings)
 14. [IAG Refresh Custom Script](#iag-refresh-custom-script)
-15. [Restart IAP](#restart-iap)
+15. [Restart Platform](#restart-platform)
 16. [Restart IAG](#restart-iag)
 17. [Admin All Roles](#admin-all-roles)
 
-## Get IAP Token
-This tool will fetch an IAP session token and display it to the screen. It
-requires the following variables, these should be defined in the hosts file,
-as "extra-vars" on the command line, or a mixture of both. For example, the
-password  may not be approrpriate to keep in a hosts file and may be better
-suited for the command line.
-
-| NAME         | DESCRIPTION                                       |
-|--------------|---------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on. |
-| iap_protocol | The HTTP protocol that is being used by IAP       |
-| iap_username | The application user's name                       |
-| iap_password | The application user's password                   |
+## Get Platform Token
+This tool will fetch a platform session token and display it to the screen.
+This playbook requries Platform API access.
 
 ### Example
-`ansible-playbook playbooks/get_iap_token.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password>'`
+`ansible-playbook playbooks/get_platform_token.yml -i hosts.yaml --extra-vars 'platform_username=<some-user> platform_password=<some-password>'`
 
 ## Restart Adapter
 This tool will restart a list of provided adapter names after fetching an IAP
-session token. It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+session token. This playbook requries Platform API access.
 
-| NAME         | DESCRIPTION                                       |
-|--------------|---------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on. |
-| iap_protocol | The HTTP protocol that is being used by IAP       |
-| iap_username | The application user's name                       |
-| iap_password | The application user's password                   |
-| adapters     | Comma separated list of adapter names to restart  |
+### Required Variables
+
+| NAME              | DESCRIPTION                                       |
+|-------------------|---------------------------------------------------|
+| adapters          | String(one adapter) or Comma separated list of adapter names to restart  |
 
 ### Example
 `ansible-playbook playbooks/restart_adapters.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password> adapters=<comma-separated-list-of-adapter-names>'`
@@ -63,70 +86,44 @@ be better suited for the command line.
 ## Metrics
 This tool will show the quantity of workflows, templates, MOP templates, 
 analytic templates, JSTs, JSON forms, forms, jobs and automations in IAP. 
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
-
-| NAME         | DESCRIPTION                                       |
-|--------------|---------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on. |
-| iap_protocol | The HTTP protocol that is being used by IAP       |
-| iap_username | The application user's name                       |
-| iap_password | The application user's password                   |
+This playbook requries Platform API access.
 
 ### Example
 `ansible-playbook playbooks/metrics.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password>'`
 
 ## Adjusting Adapters' log level
 This tool will adjust the log level of the adapters in IAP. Available options are 
-`error, warn, info, debug, trace, spam`.
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+`error, warn, info, debug, trace, spam`. This playbook requries Platform API access.
+
+### Required Variables
 
 | NAME         | DESCRIPTION                                                     |
 |--------------|-----------------------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on.               |
-| iap_protocol | The HTTP protocol that is being used by IAP                     |
-| iap_username | The application user's name                                     |
-| iap_password | The application user's password                                 |
 | log_level    | The log level to be set (error, warn, info, debug, trace, spam) |
 
 ### Example
 `ansible-playbook playbooks/adapters_log_level.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password> log_level=error'`
 
 ## Starting/Stopping Workers
-This tool will start or stop task worker and/or job worker (2023.1 and later) in IAP.
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+These playbooks will start or stop **task workers** and/or **job workers** (supported in Platform 2023.1 and later).
+These playbooks requrie Platform API access.
 
-| NAME         | DESCRIPTION                                            |
-|--------------|--------------------------------------------------------|
-| iap_port     | The HTTP port that the application is running on.      |
-| iap_protocol | The HTTP protocol that is being used by IAP            |
-| iap_username | The application user's name                            |
-| iap_password | The application user's password                        |
-| iap_action   | The desired action to perform. Available options are:  |
-|              |  'start_task_worker'                                   |
-|              |  'stop_task_worker'                                    |
-|              |  'start_job_worker'                                    |
-|              |  'stop_job_worker'                                     |
-|              |  'start_both'                                          |
-|              |  'stop_both'                                            | 
+### Playbooks
+Each action has its own playbook:
+- `start_task_worker.yml`
+- `stop_task_worker.yml`
+- `start_job_worker.yml`
+- `stop_job_worker.yml`
 
-### Example
-`ansible-playbook playbooks/workers.yml -i hosts.yaml --extra-vars 'iap_username=<some-user> iap_password=<some-password> iap_action=start_task_worker'`
+### Example Usage
+`ansible-playbook start_task_worker.yml -i hosts.yaml --extra-vars 'platform_username=<user> platform_password=<password>'`
+
 
 ## Mongo Dump
 This tool will dump single or all collections from a given mongo database. 
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+This playbook requries Host Machine access.
+
+### Required Variables
 
 | NAME           | DESCRIPTION                                                              |
 |----------------|--------------------------------------------------------------------------|
@@ -140,19 +137,13 @@ be better suited for the command line.
 `ansible-playbook playbooks/mongo_dump.yml -i hosts.yaml --extra-vars 'db=itential collection=workflows'`
 
 ## Create Adapter
-This tool will create the adapter and starts it. It requires the following variables, these should be defined in the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+This tool will create the adapter and starts it.
+This playbook requries Platform API access.
+
+### Required Variables
 
 | NAME                    | DESCRIPTION                                                                                 |
 |-------------------------|---------------------------------------------------------------------------------------------|
-| iap_port                | The port that the IAP is running on.                                                        |
-| iap_protocol            | The HTTP/HTTPS protocol that is being used by IAP                                           |
-| iap_username            | The application user's name                                                                 |
-| iap_password            | The application user's password                                                             |
 | adapter_properties_file | Name of the JSON file where the adapter properties are stored.                              |
 
 ### Example
@@ -160,18 +151,12 @@ be better suited for the command line.
 
 ## App Adapter Version
 This tool will show the the version of applications and adapters in the IAP. User can specify the applications/adapters of which they want to see the version. The users also have the option to view the versions of all applications and adapters.
-It requires the following variables, these should be defined in
+This playbook requries Platform API access.
 
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+### Required Variables
 
 | NAME              | DESCRIPTION                                                                                 |
 |-------------------|---------------------------------------------------------------------------------------------|
-| iap_port          | The port that the IAP is running on.                                                        |
-| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
-| iap_username      | The application user's name                                                                 |
-| iap_password      | The application user's password                                                             |
 | adapter_app_names | Names of applications and adapters, separated by comma. If no names are provided, will return versions of all applications and adapters.|
 
 ### Example
@@ -185,18 +170,13 @@ The following command returns the version of all applications and adapters.
 
 
 ## Sync IAG Custom Script Schema
-This tool will grab the JSON schema(decorations) of the custom script from the first IAG host in the `gateway` group and applies it to the custom script across other IAG hosts in the `gateway` group. 
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+This tool will grab the JSON schema(decorations) of the custom script from the first IAG host in the `gateway` group and applies it to the custom script across other IAG hosts in the `gateway` group.
+This playbook requries IAG API access.
+
+### Required Variables
 
 | NAME              | DESCRIPTION                                                                                 |
 |-------------------|---------------------------------------------------------------------------------------------|
-| iag_port          | The port that the IAG is running on.                                                        |
-| iag_protocol      | The HTTP/HTTPS protocol that is being used by IAG                                           |
-| iag_username      | The IAG application user's name                                                             |
-| iag_password      | The IAG application user's password                                                         |
 | script_name       | Name of the custom script                                                                   |
 
 > **_NOTE:_**  Make sure that the first host in the `gateway` group has the latest JSON schema.
@@ -207,15 +187,10 @@ be better suited for the command line.
 
 ## Dependencies Version
 This tool will return the version of redis, rabbitmq, mongobd, IAP components, and IAG components. More information about the dependencies can be found in [this](https://docs.itential.com/docs/itential-dependencies-consolidated) page. The rabbitmq server, redis server, IAP server and IAG server
-should be under their respective group in the hosts file. The following variables should be defined or can be passed from command line to establish ssh connection.
+should be under their respective group in the hosts file.
+This playbook requries Host Machine access.
 
-| NAME                         | DESCRIPTION                                                                                 |
-|------------------------------|---------------------------------------------------------------------------------------------|
-| ansible_user                 | The ssh username to connect.                                                                |
-| ansible_password             | The ssh password to authenticate.                                                           |
-| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
-
-Additionally, the following variable should be defined in the hosts file, as "extra-vars" on the command line
+### Required Variables
 
 | NAME         | DESCRIPTION                                                                           |
 |--------------|---------------------------------------------------------------------------------------|
@@ -231,27 +206,13 @@ Additionally, the following variable should be defined in the hosts file, as "ex
 `ansible-playbook playbooks/dependencies_version.yml -i hosts --extra-vars 'component=all'`
 
 ## Switch Active Profile
-This tool will switch the active profile to the profile specified. After the active profile is switched, it restarts the IAP.
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+This tool will switch the active profile to the profile specified. After the active profile is switched, it restarts the IAP. This playbook requries Host Machine and Platform API access.
 
-| NAME                         | DESCRIPTION                                                                                 |
-|------------------------------|---------------------------------------------------------------------------------------------|
-| iap_port                     | The port that the IAP is running on.                                                        |
-| iap_protocol                 | The HTTP/HTTPS protocol that is being used by IAP.                                          |
-| iap_username                 | The application user's name.                                                                |
-| iap_password                 | The application user's password.                                                            |
-| id                           | The id of the profile.                                                                      |
+### Required Variables
 
-Likewise, the following variables should be defined in the hosts file or can be passed from the command line as these variables
-are needed to make an ssh connection to restart IAP.
-| NAME                         | DESCRIPTION                                                                                 |
-|------------------------------|---------------------------------------------------------------------------------------------|
-| ansible_user                 | The ssh username to connect to IAP.                                                         |
-| ansible_password             | The ssh password to authenticate.                                                           |
-| ansible_ssh_private_key_file | The key file to authenticate.                                                               |
+| NAME         | DESCRIPTION                                     |
+|--------------|-------------------------------------------------|
+| id           | The id of the profile.                          |
 
 ### Example
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>'`
@@ -265,12 +226,11 @@ Running the playbook by providing ssh username and password from command line
 `ansible-playbook playbooks/app_adapter_version.yml -i hosts --extra-vars 'id=<profile-id> iap_username=<some-username> iap_password=<some-password>' -u <ssh_username> --ask-pass <password>`
 
 
-# Job and Task Worker Status
+## Job and Task Worker Status
 This tool will return the status of job worker and task worker of IAP.
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+This playbook requries Platform API access.
+
+### Required Variables
 
 | NAME              | DESCRIPTION                                                                                 |
 |-------------------|---------------------------------------------------------------------------------------------|
@@ -282,82 +242,44 @@ be better suited for the command line.
 ### Example
 `ansible-playbook playbooks/job_worker_status.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password>`
 
-# RBAC Settings
-This tool will return the roles assigned for a list of users in IAP.
-It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
+## RBAC Settings
+This playbook retrieves **RBAC (Role-Based Access Control)** settings for one or more users in the Platform. It gathers authorization accounts and roles from the Platform API, processes the data, and displays the assigned roles for the specified users.
+This playbook requries Platform API access.
 
-| NAME              | DESCRIPTION                                                                                 |
-|-------------------|---------------------------------------------------------------------------------------------|
-| iap_port          | The port that the IAP is running on.                                                        |
-| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
-| iap_username      | The application user's name                                                                 |
-| iap_password      | The application user's password                                                             |
-| users             | Usernames, seperated by comma.                                                              |
+### Required Variables
 
-### Example
-`ansible-playbook playbooks/rbac_settings.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> users=<username1>,<username2>'`
+| NAME                | DESCRIPTION                                                                |
+|---------------------|----------------------------------------------------------------------------|
+| users               | A single username (string) or a list of usernames.                         |
+
+---
+
+### Example Usage
+
+Get RBAC settings for multiple users using username/password:
+`ansible-playbook rbac_settings.yml -i hosts.yaml --extra-vars 'platform_username=<user> platform_password=<password> users=["user1","user2"]'`
+
 
 ## IAG Refresh Custom Script
-This tool will refresh the custom scripts cache in IAG. Furthermore, it also restarts the AGManager application and the IAG adapters in the IAP so that the updated scripts can be accessed from the IAP. The IAP hostnames should be under `platform` group and the IAG hostnames should be under the `gateway` group inside the host file.It requires the following variables, these should be defined in
-the hosts file, as "extra-vars" on the command line, or a mixture of both. For
-example, the password  may not be approrpriate to keep in a hosts file and may
-be better suited for the command line.
-
-| NAME              | DESCRIPTION                                                                                 |
-|-------------------|---------------------------------------------------------------------------------------------|
-| iap_port          | The port that the IAP is running on.                                                        |
-| iap_protocol      | The HTTP/HTTPS protocol that is being used by IAP                                           |
-| iap_username      | The IAP application user's name                                                             |
-| iap_password      | The IAP application user's password                                                         |
-| iag_port          | The port that the IAG is running on.                                                        |
-| iag_protocol      | The HTTP/HTTPS protocol that is being used by IAG                                           |
-| iag_username      | The IAG application user's name                                                             |
-| iag_password      | The IAG application user's password                                                         |
-
+This tool will refresh the custom scripts cache in IAG. Furthermore, it also restarts the AGManager application and the IAG adapters in the IAP so that the updated scripts can be accessed from the IAP. The IAP hostnames should be under `platform` group and the IAG hostnames should be under the `gateway` group inside the host file.
+This playbook requries Platform API and IAG API access.
 
 ### Example
 `ansible-playbook playbooks/iag_refresh_custom_scripts.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> iag_username=<some-username> iag_password=<some-password>'`
 
-## Restart IAP
-This tool will restart the IAP.
-It requires the following variables, these should be defined in
-the hosts file or can be passed from the command line.
+## Restart Itential Platform
+This tool will perform a safe restart the Itential Platform. It turns off task and job workers then waits until there are no
+in progress jobs before restarting the Platform. The playbook requires Host Machine and Platform API access.
 
-| NAME                              | DESCRIPTION                                                                                 |
-|-----------------------------------|---------------------------------------------------------------------------------------------|
-| ansible_user                      | The ssh username to connect to the IAP.                                                     |
-| ansible_password                  | The password to authenticate.                                                               |
-| ansible_ssh_private_key_file      | The key file to authenticate.                                                               |
-
-The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
 ### Example
 Running playbook when password/key file is defined in the hosts file
 
 `ansible-playbook playbooks/restart_iap.yml -i hosts`
 
-Running playbook by providing key file from command-line
-
-`ansible-playbook playbooks/restart_iap.yml -i hosts --private-key <key_file_name>`
-
-Running playbook by providing username and password from command-line
-
-`ansible-playbook playbooks/restart_iap.yml -i hosts -u <ssh_username> --ask-pass <password>`
-
 ## Restart IAG
 This tool will restart the IAG.
-It requires the following variables, these should be defined in
-the hosts file or can be passed from the command line.
+This playbook requries Host Machine access.
 
-| NAME                              | DESCRIPTION                                                                                 |
-|-----------------------------------|---------------------------------------------------------------------------------------------|
-| ansible_user                      | The ssh username to connect to the IAG.                                                     |
-| ansible_password                  | The password to authenticate.                                                               |
-| ansible_ssh_private_key_file      | The key file to authenticate.                                                               |
-
-The password can be provided from command line using `--ask-pass` option. Likewise, the key file can also be specified using `--private-key` option.
 ### Example
 Running playbook when password/key file is defined in the hosts file
 
@@ -373,16 +295,8 @@ Running playbook by providing username and password from command-line
 
 
 ## Admin All Roles
-This tool will add all available roles to the admin user. It
-requires the following variables, these should be defined in the hosts file,
-as "extra-vars" on the command line, or a mixture of both. Any sensitive information, like  passwords, should be encrypted in the host file with ansible vault.
-
-| NAME         | DESCRIPTION                                       |
-|--------------|---------------------------------------------------|
-| iap_http_port| The HTTP port that the application is running on. |
-| iap_https_port| The HTTPs port that the application is running on. |
-| iap_username | The application user's name                       |
-| iap_password | The application user's password                   |
+This tool will add all available roles to the admin user.
+This playbook requries Platform API access.
 
 ### Example
 `ansible-playbook playbooks/admin_all_roles.yml -i hosts.yaml --extra-vars 'iap_username=<some-user>' --vault-password-file .password`

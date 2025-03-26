@@ -3,9 +3,11 @@
 ---
 - name: Deactivate job workers
   itential.platform.deactivate_job_worker:
+  delegate_to: localhost
 
 - name: Deactivate task workers
   itential.platform.deactivate_task_worker:
+  delegate_to: localhost
 
 - name: Wait until only manual tasks remain (or none)
   itential.platform.get_tasks:
@@ -14,3 +16,4 @@
   until: (active_tasks.json.data | rejectattr('type', 'equalto', 'manual') | list | length) == 0
   retries: 30
   delay: 10
+  delegate_to: localhost

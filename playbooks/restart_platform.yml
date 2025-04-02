@@ -8,9 +8,9 @@
   hosts: platform
   gather_facts: false
   roles:
-    - auth_token
+    - itential.toolkit.auth_token
   tasks:
     - name: Run restart tasks
       ansible.builtin.include_role:
-        name: restart_platform
+        name: itential.toolkit.restart_platform
         tasks_from: restart

@@ -1,0 +1,7 @@
+# Copyright (c) 2024, Itential, Inc
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# restart_platform_safe determines if this role makes API reqeusts to the platform
+# to turn off task/job workers and ensure that no jobs are running before restarting
+# If it is set to false, the platform can be restarted without API access.
+restart_platform_safe: true

@@ -2,10 +2,15 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
-# ansible-playbook restart_Platform.yml -i hosts
+# ansible-playbook restart_platform.yml -i hosts
+
 - name: Restart Platform
   hosts: platform
   gather_facts: false
   roles:
-    - auth_token
-    - restart_platform
+    - itential.toolkit.auth_token
+  tasks:
+    - name: Run restart tasks
+      ansible.builtin.include_role:
+        name: itential.toolkit.restart_platform
+        tasks_from: restart

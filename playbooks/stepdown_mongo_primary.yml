@@ -8,7 +8,7 @@
 # To hide sensitive data, use ansible-vault to encrypt passwords.
 
 # Example usage:
-# ansible-playbook force_mongo_primary.yml -i hosts \
+# ansible-playbook stepdown_mongo_primary.yml -i hosts \
 #   -e "mongo_admin_password=adminpass"
 
 - name: Force MongoDB Primary Election

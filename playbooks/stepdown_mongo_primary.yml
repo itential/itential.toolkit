@@ -15,47 +15,24 @@
   hosts: mongodb
   gather_facts: false
   any_errors_fatal: true
+  vars:
+    ansible_python_interpreter: /var/tmp/mongodb_venv/bin/python3
 
   tasks:
     - name: Determine current primary
       community.mongodb.mongodb_shell:
         eval: "db.adminCommand('hello').isWritablePrimary"
       register: hello_result
-      vars:
-        ansible_python_interpreter: /usr/bin/python3
 
     - name: Set is_old_primary_mongo fact
       ansible.builtin.set_fact:
         is_old_primary_mongo: "{{ hello_result.transformed_output[0] | default(false) }}"
 
     - name: Force MongoDB primary to step down
-      community.mongodb.mongodb_shell:
+      community.mongodb.mongodb_stepdown:
         login_user: admin
         login_password: "{{ mongo_admin_password }}"
         login_database: admin
-        eval: "rs.stepDown(60, 30)"
-      register: stepdown_result
-      vars:
-        ansible_python_interpreter: /usr/bin/python3
+        stepdown_seconds: 60
+        force: true
       when: is_old_primary_mongo | bool
-
-    - name: Detect new primary
-      community.mongodb.mongodb_shell:
-        eval: "db.adminCommand('hello').isWritablePrimary"
-      register: hello_result
-      vars:
-        ansible_python_interpreter: /usr/bin/python3
-
-    - name: Set is_new_primary_mongo fact
-      ansible.builtin.set_fact:
-        is_new_primary_mongo: "{{ hello_result.transformed_output[0] | default(false) }}"
-
-    - name: Fail if no new primary was elected
-      ansible.builtin.fail:
-        msg: "No new primary was elected — the same host is still primary."
-      when: is_new_primary_mongo | bool and is_old_primary_mongo | bool
-
-    - name: Success - New primary elected
-      ansible.builtin.debug:
-        msg: "New primary elected: {{ inventory_hostname }}"
-      when: is_new_primary_mongo | bool

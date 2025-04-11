@@ -2,7 +2,7 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
-# ansible-playbook -i hosts metrics.yml 
+# ansible-playbook -i hosts metrics.yml
 - name: IAP Metrics
   hosts: platform
   gather_facts: false
@@ -19,20 +19,19 @@
         headers:
           Content-Type: "application/json"
         status_code: 200
-        return_content: yes
+        return_content: true
       register: token
 
     - name: Extract token from login response
-      set_fact:
+      ansible.builtin.set_fact:
         auth_token: "?token={{ token.content }}"
-
 
     - name: Get workflow count
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/automation-studio/workflows{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: workflows
 
     - name: Get template count
@@ -40,7 +39,7 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/automation-studio/templates{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: templates
 
     - name: Get transformation count
@@ -48,7 +47,7 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/transformations{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: transformations
 
     - name: Get MOP templates count
@@ -56,7 +55,7 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/mop/listTemplates{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: mop
 
     - name: Get analytic templates count
@@ -64,7 +63,7 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/mop/listAnalyticTemplates{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: analytictemplates
 
     - name: Get jobs count
@@ -72,7 +71,7 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/operations-manager/jobs{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: jobs
 
     - name: Get automations count
@@ -80,15 +79,15 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/operations-manager/automations{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: automations
-    
+
     - name: Get form count
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/formbuilder/listForms{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: forms
 
     - name: Get json form count
@@ -96,20 +95,20 @@
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/json-forms/forms{{ auth_token }}"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: jsonforms
 
     - name: Display metrics
       ansible.builtin.debug:
-        msg: 
-        - "Metrics of {{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}"
-        - "====================================================="
-        - "Workflow count: {{ workflows.json.count }} " 
-        - "Template count: {{ templates.json.count }} " 
-        - "MOP template count: {{ mop.json | length }} "
-        - "Analytic template count: {{ analytictemplates.json | length }} " 
-        - "JST count: {{ transformations.json.total }} " 
-        - "JSON form count: {{ jsonforms.json | length }} " 
-        - "Form count: {{ forms.json | length }} " 
-        - "Job count: {{ jobs.json.metadata.total }} " 
-        - "Automation count: {{ automations.json.metadata.total }} " 
+        msg:
+          - "Metrics of {{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}"
+          - "====================================================="
+          - "Workflow count: {{ workflows.json.count }} "
+          - "Template count: {{ templates.json.count }} "
+          - "MOP template count: {{ mop.json | length }} "
+          - "Analytic template count: {{ analytictemplates.json | length }} "
+          - "JST count: {{ transformations.json.total }} "
+          - "JSON form count: {{ jsonforms.json | length }} "
+          - "Form count: {{ forms.json | length }} "
+          - "Job count: {{ jobs.json.metadata.total }} "
+          - "Automation count: {{ automations.json.metadata.total }} "

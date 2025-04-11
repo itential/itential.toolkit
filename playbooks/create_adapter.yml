@@ -22,7 +22,7 @@
 
   vars:
     adapter_properties: "{{ lookup('file', adapter_properties_file) | from_json }}"
-  
+
   tasks:
     - name: Login to IAP and get token
       ansible.builtin.uri:
@@ -33,13 +33,13 @@
         headers:
           Content-Type: "application/json"
         status_code: 200
-        return_content: yes
+        return_content: true
       register: token
 
     - name: Extract token from login response
-      set_fact:
+      ansible.builtin.set_fact:
         auth_token: "?token={{ token.content }}"
-    
+
     - name: Make an API call to create the adapter instance
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/adapters{{ auth_token }}"
@@ -48,24 +48,23 @@
         body_format: json
         headers:
           Content-Type: "application/json"
-        status_code: [200,400,500]
-        return_content: yes
+        status_code: [200, 400, 500]
+        return_content: true
       register: response
-    
+
     - name: Extract the response of an API call
-      set_fact:
+      ansible.builtin.set_fact:
         creation_response: "{{ response.content }}"
-    
+
     - name: Start the adapter
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/adapters/{{ creation_response.data.name }}/start{{ auth_token }}"
         method: PUT
-        status_code: [200,400,500]
-        return_content: yes
+        status_code: [200, 400, 500]
+        return_content: true
       when: creation_response.status is defined and creation_response.status == "Created"
-    
+
     - name: Display the response.
-      ansible.builtin.debug: 
+      ansible.builtin.debug:
         msg:
           - "{{ creation_response }}"
-

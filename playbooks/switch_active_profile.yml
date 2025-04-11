@@ -2,7 +2,7 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
-# ansible-playbook -i switch_active_profile.yml 
+# ansible-playbook -i switch_active_profile.yml
 
 - name: Switch Active Profile
   hosts: platform
@@ -10,38 +10,19 @@
   become: true
 
   tasks:
-    - name: Login to IAP and get token
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://localhost:{{ iap_port }}/login"
-        method: POST
-        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
-        body_format: json
-        headers:
-          Content-Type: "application/json"
-        status_code: 200
-        return_content: yes
-      register: token
-
-    - name: Extract token from login response
-      ansible.builtin.set_fact:
-        auth_token: "?token={{ token.content }}"
-    
     - name: Switch active Profile
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://localhost:{{ iap_port }}/profiles/{{ id }}/active{{ auth_token }}"
+      itential.platform.generic_request:
         method: PUT
-        status_code: 200, 300, 400, 500
-        return_content: yes
-      register: switch_profile_response
-    
+        endpoint: "/profiles/{{ id }}/active"
+      register: status_response
+
     - name: Display the response
       ansible.builtin.debug:
         msg:
           - "{{ switch_profile_response.json }}"
 
-    - name: Restart IAP
-      ansible.builtin.systemd:
-        name: automation-platform
-        state: restarted
+    - name: Restart platform
+      ansible.builtin.include_role:
+        name: itential.toolkit.restart_platform
+        tasks_from: restart
       when: switch_profile_response.status == 200
-      

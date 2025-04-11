@@ -6,9 +6,11 @@
 # It identifies the current primary using the Redis INFO command,
 # steps it down using the FAILOVER command, and confirms a new primary is elected.
 #
+# This playbook requires the redis password for the admin user.
+#
 # Usage:
 # ansible-playbook stepdown_redis_primary.yml -i hosts \
-#   -e "redis_username=your_user redis_password=your_pass"
+#   -e "redis_password=your_pass"
 
 - name: Step down Redis primary and trigger re-election
   hosts: redis
@@ -20,7 +22,7 @@
   tasks:
     - name: Retrieve Redis role information
       ansible.builtin.command: >
-        {{ redis_cli_path }} --user {{ redis_username }} --pass {{ redis_password }} info
+        {{ redis_cli_path }} --user admin --pass {{ redis_password }} info
       register: redis_info
       changed_when: false
       no_log: true
@@ -36,7 +38,7 @@
 
     - name: Initiate Redis FAILOVER on the current primary
       ansible.builtin.command: >
-        {{ redis_cli_path }} --user {{ redis_username }} --pass {{ redis_password }} FAILOVER
+        {{ redis_cli_path }} --user admin --pass {{ redis_password }} FAILOVER
       when: is_redis_primary | bool
       register: failover_output
       changed_when: true

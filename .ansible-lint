@@ -12,4 +12,4 @@ warn_list:
 
 # Rules to skip entirely (e.g., for private or custom collections)
 skip_list:
-  - name[missing-module]
+  - name[missing]

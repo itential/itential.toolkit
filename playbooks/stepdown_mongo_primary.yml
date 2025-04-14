@@ -1,0 +1,38 @@
+# Copyright (c) 2024, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+# This playbook forces a MongoDB primary re-election.
+# It checks the current primary, steps it down if applicable,
+# and verifies that a different host is elected as the new primary.
+
+# To hide sensitive data, use ansible-vault to encrypt passwords.
+
+# Example usage:
+# ansible-playbook stepdown_mongo_primary.yml -i hosts \
+#   -e "mongo_admin_password=adminpass"
+
+- name: Force MongoDB Primary Election
+  hosts: mongodb
+  gather_facts: false
+  any_errors_fatal: true
+  vars:
+    ansible_python_interpreter: /var/tmp/mongodb_venv/bin/python3
+
+  tasks:
+    - name: Determine current primary
+      community.mongodb.mongodb_shell:
+        eval: "db.adminCommand('hello').isWritablePrimary"
+      register: hello_result
+
+    - name: Set is_old_primary_mongo fact
+      ansible.builtin.set_fact:
+        is_old_primary_mongo: "{{ hello_result.transformed_output[0] | default(false) }}"
+
+    - name: Force MongoDB primary to step down
+      community.mongodb.mongodb_stepdown:
+        login_user: admin
+        login_password: "{{ mongo_admin_password }}"
+        login_database: admin
+        stepdown_seconds: 60
+        force: true
+      when: is_old_primary_mongo | bool

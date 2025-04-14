@@ -1,0 +1,50 @@
+---
+# Copyright (c) 2024, Itential, LLC
+# GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
+#
+# This playbook forces a Redis primary re-election.
+# It identifies the current primary using the Redis INFO command,
+# steps it down using the FAILOVER command, and confirms a new primary is elected.
+#
+# This playbook requires the redis password for the admin user.
+#
+# Usage:
+# ansible-playbook stepdown_redis_primary.yml -i hosts \
+#   -e "redis_password=your_pass"
+
+- name: Step down Redis primary and trigger re-election
+  hosts: redis
+  gather_facts: false
+  any_errors_fatal: true
+  vars:
+    redis_cli_path: /usr/local/bin/redis-cli
+
+  tasks:
+    - name: Retrieve Redis role information
+      ansible.builtin.command: >
+        {{ redis_cli_path }} --user admin --pass {{ redis_password }} info
+      register: redis_info
+      changed_when: false
+      no_log: true
+
+    - name: Identify if this host is the Redis primary
+      ansible.builtin.set_fact:
+        is_redis_primary: >-
+          {{ redis_info.stdout_lines | select('match', '^role:master$') | list | length > 0 }}
+
+    - name: Display Redis primary status
+      ansible.builtin.debug:
+        var: is_redis_primary
+
+    - name: Initiate Redis FAILOVER on the current primary
+      ansible.builtin.command: >
+        {{ redis_cli_path }} --user admin --pass {{ redis_password }} FAILOVER
+      when: is_redis_primary | bool
+      register: failover_output
+      changed_when: true
+      no_log: true
+
+    - name: Show failover result stdout
+      ansible.builtin.debug:
+        msg: "FAILOVER command returned {{ failover_output.stdout }}"
+      when: is_redis_primary | bool

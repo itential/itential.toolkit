@@ -9,7 +9,3 @@ exclude_paths:
 warn_list:
   - yaml[line-length]
   - var-naming[no-role-prefix]
-
-# Rules to skip entirely (e.g., for private or custom collections)
-skip_list:
-  - missing-import

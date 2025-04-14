@@ -11,5 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@main # or version tag instead of 'main'
+        uses: ansible/ansible-lint@main
+        with:
+          args: >
+            --skip-list missing-import
+            --exclude .github

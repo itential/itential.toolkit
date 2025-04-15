@@ -21,13 +21,13 @@
   gather_facts: false
   connection: local
   tasks:
-    - name: Retrieve authorization accounts
+    - name: Retrieve authorization accounts # noqa syntax-check
       itential.platform.generic_request:
         method: GET
         endpoint: "/authorization/accounts"
       register: auth_accounts
 
-    - name: Retrieve available roles
+    - name: Retrieve available roles # noqa syntax-check
       itential.platform.generic_request:
         method: GET
         endpoint: "/authorization/roles"

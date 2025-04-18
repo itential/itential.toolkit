@@ -20,7 +20,7 @@
         headers:
           Content-Type: "application/json"
         status_code: 200
-        return_content: yes
+        return_content: true
       register: iag_token
       when: inventory_hostname in groups["gateway"]
 
@@ -30,21 +30,21 @@
       when: inventory_hostname in groups["gateway"]
 
     - name: Get the latest script schema
-      ansible.builtin.uri: 
+      ansible.builtin.uri:
         url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/scripts/{{ script_name }}/schema"
         method: GET
-        return_content: yes
+        return_content: true
         status_code: 200
         headers:
-            Authorization: "{{ iag_auth_token }}"
-      run_once: true
+          Authorization: "{{ iag_auth_token }}"
+      delegate_to: "{{ groups['gateway'][0] }}"
       register: schema_response
-    
+
     - name: Display the schema
       ansible.builtin.debug:
         msg:
           - "{{ schema_response.json }}"
-      run_once: true
+      delegate_to: "{{ groups['gateway'][0] }}"
 
     - name: Update the script schema across all IAG
       ansible.builtin.uri:
@@ -54,6 +54,6 @@
         body_format: json
         status_code: 200
         headers:
-            Authorization: "{{ iag_auth_token }}"
+          Authorization: "{{ iag_auth_token }}"
         return_content: true
       register: update_response

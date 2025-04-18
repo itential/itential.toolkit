@@ -2,7 +2,7 @@
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
 # Example usage:
-# ansible-playbook -i hosts iag_refresh_custom_scripts.yml 
+# ansible-playbook -i hosts iag_refresh_custom_scripts.yml
 - name: Refresh IAG Scripts
   hosts: all
   gather_facts: false
@@ -18,12 +18,12 @@
         headers:
           Content-Type: "application/json"
         status_code: 200
-        return_content: yes
+        return_content: true
       register: iag_token
       when: inventory_hostname in groups["gateway"]
 
     - name: Extract IAG token from login response
-      set_fact:
+      ansible.builtin.set_fact:
         iag_auth_token: "{% set token_content = iag_token.content | from_json %}{{ token_content.token }}"
       when: inventory_hostname in groups["gateway"]
 
@@ -32,11 +32,11 @@
         url: "{{ iag_protocol }}://{{ ansible_host }}:{{ iag_port }}/api/v2.0/scripts/refresh"
         method: POST
         status_code: 200
-        return_content: yes
+        return_content: true
         headers:
           Authorization: "{{ iag_auth_token }}"
       when: inventory_hostname in groups["gateway"]
-    
+
     - name: Login to IAP and get token
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
@@ -46,36 +46,36 @@
         headers:
           Content-Type: "application/json"
         status_code: 200
-        return_content: yes
+        return_content: true
       register: iap_token
       when: inventory_hostname in groups["platform"]
 
     - name: Extract token from login response
-      set_fact:
+      ansible.builtin.set_fact:
         iap_auth_token: "?token={{ iap_token.content }}"
       when: inventory_hostname in groups["platform"]
-    
+
     - name: Get the list of gateway adapters
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/health/adapters{{ iap_auth_token }}&contains=gateway"
         method: GET
         status_code: 200
-        return_content: yes
+        return_content: true
       register: adapters_response
       when: inventory_hostname in groups["platform"]
-    
+
     - name: Extract IAG adapter names
-      set_fact:
+      ansible.builtin.set_fact:
         adapters: "{% set adapters_content = adapters_response.content | from_json %}{{ adapters_content.results | map(attribute='id') }}"
       when: inventory_hostname in groups["platform"]
-    
+
     - name: Restart IAG adapters
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/adapters/{{ item }}/restart{{ iap_auth_token }}"
         method: PUT
       loop: "{{ adapters }}"
       when: inventory_hostname in groups["platform"]
-    
+
     - name: Restart gateway application
       ansible.builtin.uri:
         url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/applications/AGManager/restart{{ iap_auth_token }}"

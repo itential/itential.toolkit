@@ -24,9 +24,9 @@
         eval: "db.adminCommand('hello').isWritablePrimary"
       register: hello_result
 
-    - name: Set is_old_primary_mongo fact
+    - name: Set primary_mongo fact
       ansible.builtin.set_fact:
-        is_old_primary_mongo: "{{ hello_result.transformed_output[0] | default(false) }}"
+        primary_mongo: "{{ hello_result.transformed_output[0] | default(false) }}"
 
     - name: Force MongoDB primary to step down
       community.mongodb.mongodb_stepdown:
@@ -35,4 +35,4 @@
         login_database: admin
         stepdown_seconds: 60
         force: true
-      when: is_old_primary_mongo | bool
+      when: primary_mongo | bool

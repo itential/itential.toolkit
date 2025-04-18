@@ -9,4 +9,6 @@
 
   tasks:
     - name: Restart IAG
-      ansible.builtin.command: sudo systemctl restart automation-gateway
+      ansible.builtin.service:
+        name: automation-gateway
+        state: restarted

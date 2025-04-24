@@ -18,6 +18,7 @@ readme: README.md
 authors:
   - Steven Schattenberg <steven.schattenberg@itential.com>
   - Ranjitha Parameshwaraiah <ranjitha.parameshwaraiah@itential.com>
+  - Wade Stern <wade.stern@itential.com>
 
 
 ### OPTIONAL but strongly recommended
@@ -44,7 +45,9 @@ tags:
 # collection label 'namespace.name'. The value is a version range
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
-dependencies: {}
+dependencies:
+  itential.platform: "*"
+  community.mongodb: "*"
 
 # The URL of the originating SCM repository
 repository: http://example.com/repository

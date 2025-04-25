@@ -1,8 +1,16 @@
 # Changelog
 
+## v1.0.3 (April 25, 2025)
+
+* Added readmes to all roles
+* fix lint
+
+Full Changelog: https://github.com/itential/itential.toolkit/compare/v1.0.2...v1.0.3 
+
+
 ## v1.0.2 (April 25, 2025)
 
-* 
+* Update galaxy version and changelog for release 1.0.2 [skip ci]
 
 Full Changelog: https://github.com/itential/itential.toolkit/compare/v1.0.1...v1.0.2 
 

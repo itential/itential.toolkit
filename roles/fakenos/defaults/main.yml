@@ -1,0 +1,4 @@
+fakenos_venv_path: /opt/automation-gateway/venv
+fakenos_workdir: /opt/automation-gateway/fakenos
+fakenos_inventory_path: /opt/automation-gateway/fakenos/inventory.yaml
+fakenos_iag_inventory_path: /opt/automation-gateway/ansible/inventory/fakenos.yaml

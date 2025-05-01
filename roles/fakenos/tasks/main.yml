@@ -9,12 +9,16 @@
     name: "{{ fakenos_workdir }}"
     state: directory
     mode: '0775'
+    owner: itential
+    group: itential
 
 - name: Generate Fakenos inventory
   ansible.builtin.template:
     src: fakenos_inventory.j2
-    dest: "{{ fakenos_inventory_path }}"
+    dest: "{{ fakenos_workdir }}/inventory.yaml"
     mode: '0644'
+    owner: itential
+    group: itential
 
 - name: Get running Fakenos PIDs
   ansible.builtin.shell: |
@@ -35,11 +39,11 @@
   ansible.builtin.shell: >
     nohup {{ fakenos_venv_path }}/bin/python3
     {{ fakenos_venv_path }}/bin/fakenos
-    --inventory {{ fakenos_inventory_path }}
+    --inventory {{ fakenos_workdir }}/inventory.yaml
     > {{ fakenos_workdir }}/fakenos.out 2>&1 &
   changed_when: false
 
-- name: Generate IAG inventory
+- name: Generate Fakenos Inventory in IAG
   ansible.builtin.template:
     src: iag_fakenos_inventory.j2
     dest: "{{ fakenos_iag_inventory_path }}"

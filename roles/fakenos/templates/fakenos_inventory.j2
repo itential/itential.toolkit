@@ -1,0 +1,12 @@
+hosts:
+{% set ns = namespace(port=starting_port | default(6000)) %}
+{% for key, device in fakenos_devices.items() %}
+{% for i in range(1, device.count + 1) %}
+  mock-{{ key }}-{{ i }}:
+    username: "admin"
+    password: "admin"
+    platform: "{{ key }}"
+    port: {{ ns.port }}
+{% set ns.port = ns.port + 1 %}
+{% endfor %}
+{% endfor %}

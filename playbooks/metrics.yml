@@ -1,114 +1,79 @@
 # Copyright (c) 2023, Itential, LLC
 # GNU General Public License v3.0+ (see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt)
 ---
-# Example usage:
-# ansible-playbook -i hosts metrics.yml
 - name: IAP Metrics
   hosts: platform
   gather_facts: false
+  roles:
+    - itential.toolkit.auth_token
   vars:
     ansible_connection: local
   tasks:
 
-    - name: Login to IAP and get token
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/login"
-        method: POST
-        body: '{"username": "{{ iap_username }}", "password": "{{ iap_password }}"}'
-        body_format: json
-        headers:
-          Content-Type: "application/json"
-        status_code: 200
-        return_content: true
-      register: token
-
-    - name: Extract token from login response
-      ansible.builtin.set_fact:
-        auth_token: "?token={{ token.content }}"
-
     - name: Get workflow count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/automation-studio/workflows{{ auth_token }}"
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: true
+        endpoint: "/automation-studio/workflows"
+        params:
+          include: "_id"
+          limit: 0
       register: workflows
 
     - name: Get template count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/automation-studio/templates{{ auth_token }}"
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: true
+        endpoint: "/automation-studio/templates"
+        params:
+          include: "_id"
       register: templates
 
     - name: Get transformation count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/transformations{{ auth_token }}"
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: true
+        endpoint: "/transformations"
+        params:
+          include: "_id"
+          limit: 0
       register: transformations
 
-    - name: Get MOP templates count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/mop/listTemplates{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: true
-      register: mop
-
-    - name: Get analytic templates count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/mop/listAnalyticTemplates{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: true
-      register: analytictemplates
-
     - name: Get jobs count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/operations-manager/jobs{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: true
+      itential.platform.get_jobs:
       register: jobs
 
-    - name: Get automations count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/operations-manager/automations{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: true
-      register: automations
-
-    - name: Get form count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/formbuilder/listForms{{ auth_token }}"
-        method: GET
-        status_code: 200
-        return_content: true
-      register: forms
+    - name: Set paused and errored job counts
+      ansible.builtin.set_fact:
+        paused_job_count: "{{ jobs.json.data | selectattr('status', 'equalto', 'paused') | list | length }}"
+        errored_job_count: "{{ jobs.json.data | selectattr('status', 'equalto', 'error') | list | length }}"
 
     - name: Get json form count
-      ansible.builtin.uri:
-        url: "{{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}/json-forms/forms{{ auth_token }}"
+      itential.platform.generic_request:
         method: GET
-        status_code: 200
-        return_content: true
+        endpoint: "/json-forms/forms"
+        params:
+          include: "_id"
+          limit: 0
       register: jsonforms
+
+    - name: Get count of active manual tasks
+      itential.platform.get_tasks:
+        status: running
+      register: active_tasks
+
+    - name: Set manual task count
+      ansible.builtin.set_fact:
+        manual_task_count: "{{ active_tasks.json.data | selectattr('type', 'equalto', 'manual') | list | length }}"
 
     - name: Display metrics
       ansible.builtin.debug:
         msg:
-          - "Metrics of {{ iap_protocol }}://{{ ansible_host }}:{{ iap_port }}"
+          - "Metrics of {{ ansible_host }}"
           - "====================================================="
-          - "Workflow count: {{ workflows.json.count }} "
-          - "Template count: {{ templates.json.count }} "
-          - "MOP template count: {{ mop.json | length }} "
-          - "Analytic template count: {{ analytictemplates.json | length }} "
-          - "JST count: {{ transformations.json.total }} "
-          - "JSON form count: {{ jsonforms.json | length }} "
-          - "Form count: {{ forms.json | length }} "
-          - "Job count: {{ jobs.json.metadata.total }} "
-          - "Automation count: {{ automations.json.metadata.total }} "
+          - "Workflow count: {{ workflows.json.total }}"
+          - "Template count: {{ templates.json.count }}"
+          - "JST count: {{ transformations.json.total }}"
+          - "JSON form count: {{ jsonforms.json | length }}"
+          - "Job count: {{ jobs.json.metadata.total }}"
+          - "Paused job count: {{ paused_job_count }}"
+          - "Errored job count: {{ errored_job_count }}"
+          - "Task count: {{ active_tasks.json.metadata.total }}"
+          - "Manual Task Count: {{ manual_task_count }}"

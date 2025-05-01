@@ -1,0 +1,52 @@
+- name: Install Fakenos
+  ansible.builtin.pip:
+    name: fakenos
+    state: present
+    virtualenv: "{{ fakenos_venv_path }}"
+
+- name: Create Fakenos working directory
+  ansible.builtin.file:
+    name: "{{ fakenos_workdir }}"
+    state: directory
+    mode: '0775'
+    owner: itential
+    group: itential
+
+- name: Generate Fakenos inventory
+  ansible.builtin.template:
+    src: fakenos_inventory.j2
+    dest: "{{ fakenos_workdir }}/inventory.yaml"
+    mode: '0644'
+    owner: itential
+    group: itential
+
+- name: Get running Fakenos PIDs
+  ansible.builtin.shell: |
+    set -o pipefail
+    ps -ef | grep -v grep | grep -w fakenos | awk '{print $2}'
+  check_mode: false
+  changed_when: false
+  failed_when: false
+  register: fakenos_pids
+
+- name: Kill existing Fakenos processes
+  ansible.builtin.command: "kill {{ item }}"
+  loop: "{{ fakenos_pids.stdout_lines }}"
+  when: fakenos_pids.stdout_lines | length > 0
+  changed_when: false
+
+- name: Start Fakenos
+  ansible.builtin.shell: >
+    nohup {{ fakenos_venv_path }}/bin/python3
+    {{ fakenos_venv_path }}/bin/fakenos
+    --inventory {{ fakenos_workdir }}/inventory.yaml
+    > {{ fakenos_workdir }}/fakenos.out 2>&1 &
+  changed_when: false
+
+- name: Generate Fakenos Inventory in IAG
+  ansible.builtin.template:
+    src: iag_fakenos_inventory.j2
+    dest: "{{ fakenos_iag_inventory_path }}"
+    mode: '0644'
+    owner: itential
+    group: itential

@@ -1,6 +1,6 @@
 # Ansible Collection - itential.toolkit
 This ansible project is intended to be a toolkit for operators of Itential
-Automation Platform and Itential Automation Gateway. It includes Itential's
+Platform and Itential Gateway. It includes Itential's
 recommended methods for performing administration tasks, making adminstrative
 changes to the platforms, and interrogating dependent systems for runtime
 information.
@@ -10,7 +10,7 @@ information.
 Playbooks in this collection need to connect to some combination of:
 - **Ansible Hosts** (via SSH), or
 - The **Itential Platform Service** (via API).
-- The **IAG Service** (via API).
+- The **Gateway Service** (via API).
 
 ### Ansible Connection Variables
 To connect to the instances using Ansible:
@@ -27,10 +27,10 @@ To connect to the Itential Platform API, provide
     - `platform_username` and `platform_password`, **or**
     - `platform_auth_token`.
 
-### IAG API Connection Variables
-To connect to the IAG API, provide 
-- `iag_port`: The port that IAG is accessible on
-- `iag_https`: Boolean that describes HTTPS (`true`) or HTTP (`false`) for the IAG API.
+### Gateway API Connection Variables
+To connect to the Gateway API, provide 
+- `iag_port`: The port that Gateway is accessible on
+- `iag_https`: Boolean that describes HTTPS (`true`) or HTTP (`false`) for the Gateway API.
 - Either:
     - `iag_username` and `iag_password`, **or**
     - `iag_auth_token`.
@@ -51,14 +51,14 @@ Example:
 3. [Metrics](#metrics)
 4. [Adjusting Adapters' Log Level](#adjusting-adapters-log-level)
 5. [Starting/Stopping Workers](#startingstopping-workers)
-6. [Sync IAG Custom Script Schema](#sync-iag-custom-script-schema)
+6. [Sync Gateway Custom Script Schema](#sync-gateway-custom-script-schema)
 7. [Dependencies Version](#dependencies-version)
 8. [Job and Task Worker Status](#job-and-task-worker-status)
 9. [RBAC Settings](#rbac-settings)
-10. [IAG Refresh Custom Scripts](#iag-refresh-custom-scripts)
+10. [Gateway Refresh Custom Scripts](#gateway-refresh-custom-scripts)
 11. [Restart Platform](#restart-platform)
-12. [Restart IAG](#restart-iag)
-13. [IAG Fakenos](#iag-fakenos)
+12. [Restart Gateway](#restart-gateway)
+13. [Gateway Fakenos](#gateway-fakenos)
 14. [MongoDB Change Password](#mongodb-change-password)
 15. [Redis Change Password](#redis-change-password)
 16. [Sentinel Change Password](#sentinel-change-password)
@@ -74,7 +74,7 @@ This playbook requries Platform API access.
 `ansible-playbook playbooks/get_platform_token.yml -i hosts.yaml --extra-vars 'platform_username=<some-user> platform_password=<some-password>'`
 
 ## Restart Adapters
-This tool will restart a list of provided adapter names after fetching an IAP
+This tool will restart a list of provided adapter names after fetching a Platform
 session token. This playbook requries Platform API access.
 
 ### Required Variables
@@ -88,14 +88,14 @@ session token. This playbook requries Platform API access.
 
 ## Metrics
 This tool will show the quantity of workflows, templates, MOP templates, 
-analytic templates, JSTs, JSON forms, forms, jobs and automations in IAP. 
+analytic templates, JSTs, JSON forms, forms, jobs and automations in Platform. 
 This playbook requries Platform API access.
 
 ### Example
 `ansible-playbook playbooks/metrics.yml -i hosts.yaml`
 
 ## Adjusting Adapters' log level
-This tool will adjust the log level of the adapters in IAP. Available options are 
+This tool will adjust the log level of the adapters in Platform. Available options are 
 `error, warn, info, debug, trace, spam`. This playbook requries Platform API access.
 
 ### Required Variables
@@ -122,9 +122,9 @@ Each action has its own playbook:
 ### Example Usage
 `ansible-playbook start_task_worker.yml -i hosts.yaml`
 
-## Sync IAG Custom Script Schema
-This tool will grab the JSON schema(decorations) of the custom script from the first IAG host in the `gateway` group and applies it to the custom script across other IAG hosts in the `gateway` group.
-This playbook requries IAG API access.
+## Sync Gateway Custom Script Schema
+This tool will grab the JSON schema(decorations) of the custom script from the first Gateway host in the `gateway` group and applies it to the custom script across other Gateway hosts in the `gateway` group.
+This playbook requries Gateway API access.
 
 ### Required Variables
 
@@ -138,7 +138,7 @@ This playbook requries IAG API access.
 `ansible-playbook sync_iag_script_schema.yml -i hosts --extra-vars 'script_name=hello.py'`
 
 ## Dependencies Version
-This tool will return the version of redis, rabbitmq, mongobd, IAP components, and IAG components. More information about the dependencies can be found in [this](https://docs.itential.com/docs/itential-dependencies-consolidated) page. The rabbitmq server, redis server, IAP server and IAG server
+This tool will return the version of redis, rabbitmq, mongobd, Platform components, and Gateway components. More information about the dependencies can be found in [this](https://docs.itential.com/docs/itential-dependencies-consolidated) page. The rabbitmq server, redis server, Platform server and Gateway server
 should be under their respective group in the hosts file.
 This playbook requries ansible host access.
 
@@ -150,15 +150,15 @@ This playbook requries ansible host access.
 |              |  `mongodb` : Returns the version of mongodb                                           |
 |              |  `redis` : Returns the version of redis                                               |
 |              |  `rabbitmq` : Returns the version of rabbitmq                                         |
-|              |  `platform` : Returns the version of mongodb, redis, rabbitmq, and IAP dependencies   |
-|              |  `gateway` : Returns the version of IAG dependencies.                                 |
+|              |  `platform` : Returns the version of mongodb, redis, rabbitmq, and Platform dependencies   |
+|              |  `gateway` : Returns the version of Gateway dependencies.                                 |
 |              |  `all` : Returns the version across all five components.                              | 
 
 ### Example
 `ansible-playbook playbooks/dependencies_version.yml -i hosts --extra-vars 'component=all'`
 
 ## Job and Task Worker Status
-This tool will return the status of job worker and task worker of IAP.
+This tool will return the status of job worker and task worker of Platform.
 This playbook requries Platform API access.
 
 ### Example
@@ -181,9 +181,9 @@ This playbook requries Platform API access.
 Get RBAC settings for multiple users using username/password:
 `ansible-playbook rbac_settings.yml -i hosts.yaml --extra-vars users=["user1","user2"]'`
 
-## IAG Refresh Custom Script
-This tool will refresh the custom scripts cache in IAG. Furthermore, it also restarts the AGManager application and the IAG adapters in the IAP so that the updated scripts can be accessed from the IAP. The IAP hostnames should be under `platform` group and the IAG hostnames should be under the `gateway` group inside the host file.
-This playbook requries Platform API and IAG API access.
+## Gateway Refresh Custom Script
+This tool will refresh the custom scripts cache in Gateway. Furthermore, it also restarts the AGManager application and the Gateway adapters in the Platform so that the updated scripts can be accessed from the Platform. The Platform hostnames should be under `platform` group and the Gateway hostnames should be under the `gateway` group inside the host file.
+This playbook requries Platform API and Gateway API access.
 
 ### Example
 `ansible-playbook playbooks/iag_refresh_custom_scripts.yml -i hosts --extra-vars 'iap_username=<some-username> iap_password=<some-password> iag_username=<some-username> iag_password=<some-password>'`
@@ -197,8 +197,8 @@ Running playbook when password/key file is defined in the hosts file
 
 `ansible-playbook playbooks/restart_platform.yml -i hosts`
 
-## Restart IAG
-This tool will restart the IAG.
+## Restart Gateway
+This tool will restart the Gateway.
 This playbook requries ansible host access.
 
 ### Example
@@ -214,8 +214,8 @@ Running playbook by providing username and password from command-line
 
 `ansible-playbook playbooks/restart_iag.yml -i hosts -u <ssh_username> --ask-pass <password>`
 
-## IAG Fakenos
-This tool will install and start fakenos which will create mock devices on an IAG host.
+## Gateway Fakenos
+This tool will install and start fakenos which will create mock devices on a Gateway host.
 The playbook requires ansible host access.
 
 ### Required Variables
